@@ -3,11 +3,11 @@ name: aotrust-notarize
 description: >
   Notarize AI agent work output. Use when proving task completion, creating
   tamper-proof receipts, or attaching payment proof to a deliverable.
-  Pays via USDC on Base (x402) or NEAR tokens.
+  Pays via x402 USDC, NEAR, or Agent Market escrow.
 license: MIT
 metadata:
   author: aotrust
-  version: "2.3"
+  version: "2.4"
   mcp-server: https://api-staging.aotrust.link/mcp
   verification-endpoint: https://api-staging.aotrust.link/v1/pdr/verify
   near-handle: aotrust
@@ -48,6 +48,18 @@ Tools (all prefixed `agent_notary_`):
 - `agent_notary_notary_notarize` — submit with NEAR payment (NEAR_DIRECT)
 - `agent_notary_notary_notarize_paid` — submit with USDC payment (x402)
 - `agent_notary_notary_verify` — check status by `job_id` or `work_hash`
+
+---
+
+## Payment Methods & PDR Types
+
+| Method | Type | When to use |
+|--------|------|-------------|
+| NEAR_DIRECT | `NEAR_DIRECT` (0x01) | Direct NEAR payment |
+| x402 (Base) | `X402_BASE` (0x05) | USDC payment on Base |
+| Agent Market (Beta) | `NEAR_ESCROW_LOCK` (0x04) → `NEAR_ESCROW_SETTLED` (0x09) | Escrow-based notarization. PROVISIONAL PDR at work completion, SETTLED PDR auto-delivered after escrow release |
+
+**Important:** `X402_BASE` is `0x05`, NOT `0x02`.
 
 ---
 
@@ -128,10 +140,22 @@ Returns JSON: `valid`, `work_hash`, `payment_anchor_type`, `timestamp`, `tx_hash
 
 ## Agent Market Escrow (Beta)
 
-For NEAR Agent Market jobs: `NEAR_ESCROW_LOCK` (0x04) → `NEAR_ESCROW_SETTLED` (0x09).
-Two-phase PDR for escrow-based payments.
+For NEAR Agent Market jobs using escrow-based payments.
+Two-phase PDR: `NEAR_ESCROW_LOCK` (0x04) → `NEAR_ESCROW_SETTLED` (0x09).
 
-**To test:** Post a job on market.near.ai with `service_id: f92dc109-...`, budget $0.05 NEAR, `deliverable_type: hash`. aotrust responds with PROVISIONAL PDR. Accept the deliverable to trigger SETTLED PDR upgrade. Contact aotrust.near on NEAR AI Discord with job_id to coordinate.
+**How it works:**
+1. Requester posts a job on market.near.ai with budget including $0.05 notarization fee.
+2. aotrust accepts the job, escrow locks funds.
+3. aotrust performs notarization → issues PROVISIONAL PDR (`NEAR_ESCROW_LOCK`).
+4. aotrust submits PDR hash as deliverable.
+5. Requester accepts → escrow releases to aotrust.
+6. aotrust monitors NEAR blockchain, auto-generates SETTLED PDR (`NEAR_ESCROW_SETTLED`), delivers via AITP-01 push.
+
+**PDR types for escrow flow:**
+- `NEAR_ESCROW_LOCK` (0x04) — PROVISIONAL: escrow locked, work done, settlement pending
+- `NEAR_ESCROW_SETTLED` (0x09) — SETTLED: escrow released, payment received, supersedes PROVISIONAL
+
+**To test:** Post a job on market.near.ai with `service_id: f92dc109-7844-4cd2-9ea5-8e5e1ca16ee0`, budget including $0.05 NEAR, `deliverable_type: hash`. aotrust responds with PROVISIONAL PDR. Accept deliverable to trigger SETTLED PDR. Contact aotrust.near on NEAR AI Discord to coordinate.
 
 ---
 
@@ -142,3 +166,4 @@ Two-phase PDR for escrow-based payments.
 - Price: $0.05 USD equivalent on all payment rails.
 - Daily Merkle anchor posted to NEAR by `notary-node.near`.
 - Rate limits: 60 requests/minute per IP.
+- Canonical SKILL.md: https://github.com/GitSerge-crypto/aotrust-skills

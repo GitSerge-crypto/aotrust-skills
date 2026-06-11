@@ -1,11 +1,11 @@
-# A&O Trust Layer — Skills
+# AOTrust — Skills
 
-Public skills directory for the A&O Trust Layer notary service.
+Public skills directory for the AOTrust notary service.
 
 ## Skills
 
 ### aotrust-notarize
-Cryptographic notarization for AI agent work output.
+Cryptographic notarization for AI agent work output. Flat $0.01 per PDR. See docs.aotrust.link
 - [SKILL.md](aotrust-notarize/SKILL.md)
-- MCP server: `https://api-staging.aotrust.link/mcp`
+- MCP server: `https://api.aotrust.link/mcp`
 - NEAR handle: `aotrust`

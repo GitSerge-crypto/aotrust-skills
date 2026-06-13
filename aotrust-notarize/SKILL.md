@@ -7,7 +7,7 @@ description: >
 license: MIT
 metadata:
   author: aotrust
-  version: "3.0"
+  version: "3.1"
   mcp-server: https://api.aotrust.link/mcp
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify
   near-handle: aotrust
@@ -38,16 +38,12 @@ payment attached. The PDR is anchored to NEAR blockchain and publicly verifiable
 
 Connect to: `https://api.aotrust.link/mcp`
 
-Tools (all prefixed `agent_notary_`):
+Tools:
 
-> Note: Tool names follow the pattern `agent_notary_notary_{action}`. The
-> double `notary_notary` is correct — MCP server prefix + tool group.
-> Copy tool names exactly as shown.
-
-- `agent_notary_notary_quote` — get current NEAR price and payment address
-- `agent_notary_notary_notarize` — submit with NEAR payment (NEAR_DIRECT)
-- `agent_notary_notary_notarize_paid` — submit with USDC payment (x402)
-- `agent_notary_notary_verify` — check status by `job_id` or `work_hash`
+- `notary_quote` — get current NEAR price and payment address
+- `notary_notarize` — submit with NEAR payment (NEAR_DIRECT)
+- `notary_notarize_paid` — submit with USDC payment (x402)
+- `notary_verify` — check status by `job_id` or `work_hash`
 
 ---
 
@@ -66,7 +62,7 @@ Tools (all prefixed `agent_notary_`):
 ## Workflow A: x402 / USDC on Base (Recommended)
 
 **Step 1: Probe**
-Call `agent_notary_notary_notarize_paid` with `work_hash`, WITHOUT payment header.
+Call `notary_notarize_paid` with `work_hash`, WITHOUT payment header.
 Receive HTTP 402 with: `usdc_contract`, `payee_address`, `amount` (10000 = $0.01), `chain_id` (8453), `valid_until`.
 
 **Step 2: Sign**
@@ -81,7 +77,7 @@ Sign EIP-3009 `transferWithAuthorization`:
 Encode as base64url JSON: `{v, r, s, from, to, value, validAfter, validBefore, nonce}`.
 
 **Step 3: Submit**
-Call `agent_notary_notary_notarize_paid` again with same `work_hash` + header `x-payment: <base64url_json>`.
+Call `notary_notarize_paid` again with same `work_hash` + header `x-payment: <base64url_json>`.
 Receive PDR with `job_id`, `pdr_hash`, `pdr_status: "SETTLED"`, `payment_anchor_type: "X402_BASE"`.
 
 ---
@@ -89,7 +85,7 @@ Receive PDR with `job_id`, `pdr_hash`, `pdr_status: "SETTLED"`, `payment_anchor_
 ## Workflow B: NEAR_DIRECT
 
 **Step 1: Quote**
-Call `agent_notary_notary_quote`. Receive: `quote_id`, `near_amount` (yoctoNEAR), `sink_address`, `expires_at` (5 min TTL).
+Call `notary_quote`. Receive: `quote_id`, `near_amount` (yoctoNEAR), `sink_address`, `expires_at` (5 min TTL).
 
 ⚠️ The `quote_id` is mandatory in Step 3. It binds your payment to this specific notarization request. Do not reuse quote_ids or skip the quote step. If the quote expires before you complete Step 3, restart from Step 1. Payments sent to an expired quote will be refunded within 24h — contact aotrust.near if not received.
 
@@ -97,7 +93,7 @@ Call `agent_notary_notary_quote`. Receive: `quote_id`, `near_amount` (yoctoNEAR)
 Send exactly `near_amount` yoctoNEAR to `sink_address`. Get `tx_hash` (base58 NEAR transaction hash).
 
 **Step 3: Submit**
-Call `agent_notary_notary_notarize` with `work_hash`, `tx_hash`, `quote_id`.
+Call `notary_notarize` with `work_hash`, `tx_hash`, `quote_id`.
 Receive PDR with `job_id`, `pdr_hash`, `pdr_status: "SETTLED"`, `payment_anchor_type: "NEAR_DIRECT"`.
 
 ---
@@ -105,7 +101,7 @@ Receive PDR with `job_id`, `pdr_hash`, `pdr_status: "SETTLED"`, `payment_anchor_
 ## Verification
 
 **Check status:**
-Call `agent_notary_notary_verify` with `job_id` or `work_hash`.
+Call `notary_verify` with `job_id` or `work_hash`.
 - `"pending"` — PDR issued, awaiting daily Merkle anchor (~24h max)
 - `"anchored"` — permanently recorded on NEAR blockchain
 - `"failed"` — contact aotrust.near

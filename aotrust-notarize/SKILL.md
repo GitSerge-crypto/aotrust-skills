@@ -1,153 +1,150 @@
 ---
 name: aotrust-notarize
 description: >
-  Notarize AI agent work output. Use when proving task completion, creating
-  tamper-proof receipts, or attaching payment proof to a deliverable.
-  Pays via x402 USDC (Base) or NEAR tokens. Flat $0.01 per PDR.
+  Issue a cryptographic proof (PDR) that a digital artifact existed at a specific time.
+  Pay $0.01 USDC on Base via x402. Anchored daily to NEAR blockchain. Publicly verifiable.
 license: MIT
 metadata:
   author: aotrust
-  version: "3.1"
-  mcp-server: https://api.aotrust.link/mcp
+  version: "3.3"
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify
   near-handle: aotrust
 ---
 
-# AOTrust — PDR Notarization
+# AOTrust — Get a PDR in 3 Steps
 
-Issue a cryptographic proof (PDR) that you performed specific work, with
-payment attached. The PDR is anchored to NEAR blockchain and publicly verifiable.
+A PDR (Provenance Data Record) is a 239-byte cryptographic receipt proving
+a digital artifact existed at a specific point in time. Anchored daily to
+NEAR blockchain. $0.01 per proof. No account needed.
 
-## Prerequisites
+## What You Need
 
-**For x402 (USDC on Base):**
-- Ethereum wallet with at least $0.02 USDC on Base Mainnet (fee + buffer)
-- Ability to sign EIP-3009 `transferWithAuthorization`
+- An Ethereum wallet with at least $0.02 USDC on **Base Mainnet** (for fee + gas buffer)
+- Ability to make HTTP requests and sign EIP-3009 `transferWithAuthorization`
 
-**For NEAR_DIRECT:**
-- NEAR account with sufficient balance (call `quote` first for exact amount)
-- Ability to send NEAR and retrieve the transaction hash
+## How It Works
 
-**For both paths — work_hash computation (must be deterministic):**
-- For text output: `sha256(output.encode('utf-8')).hexdigest()`
-- For JSON output: `sha256(json.dumps(output, sort_keys=True, separators=(',',':')).encode('utf-8')).hexdigest()`
-- For binary output: `sha256(raw_bytes).hexdigest()`
-- Always lowercase hex. No `0x` prefix. Hash the ACTUAL output, not a description of it.
-
-## MCP Server
-
-Connect to: `https://api.aotrust.link/mcp`
-
-Tools:
-
-- `notary_quote` — get current NEAR price and payment address
-- `notary_notarize` — submit with NEAR payment (NEAR_DIRECT)
-- `notary_notarize_paid` — submit with USDC payment (x402)
-- `notary_verify` — check status by `job_id` or `work_hash`
+```
+YOUR AGENT → POST work_hash to /notarize
+           ← HTTP 402 with payment details (payTo, amount, network)
+YOUR AGENT → sign EIP-3009 with your Ethereum key
+YOUR AGENT → POST work_hash + x-payment header
+           ← HTTP 200 with PDR (239 bytes, base64)
+```
 
 ---
 
-## Payment Methods & PDR Types
+## Step-by-Step
 
-| Method | Type | Status |
-|--------|------|--------|
-| NEAR_DIRECT | `NEAR_DIRECT` (0x01) | Live |
-| x402 (Base) | `X402_BASE` (0x05) | Live |
-| Agent Market Escrow | `NEAR_ESCROW_LOCK` (0x04) → `NEAR_ESCROW_SETTLED` (0x09) | Beta (Advanced Workflow) |
+### Step 1: Compute the Work Hash
 
-**Important:** `X402_BASE` is `0x05`, NOT `0x02`.
+Hash your artifact with SHA-256. This is what gets notarized — not the artifact itself.
+
+```python
+import hashlib
+work_hash = hashlib.sha256(b"your digital artifact content").hexdigest()
+```
+
+### Step 2: Request Notarization (No Payment Yet)
+
+Send your work_hash. The server responds with payment instructions.
+
+```bash
+curl -X POST https://api.aotrust.link/notarize \
+  -H "Content-Type: application/json" \
+  -d '{"work_hash":"YOUR_SHA256_HEX"}'
+```
+
+**Response (HTTP 402):**
+```json
+{
+  "payTo": "0x97E9af6B4d8a49f509DA99afaB954429Ab8Cc800",
+  "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "maxAmountRequired": "10000",
+  "network": "eip155:8453",
+  "maxTimeoutSeconds": 300
+}
+```
+
+- `payTo` — where to send payment
+- `asset` — USDC contract on Base
+- `maxAmountRequired` — 10000 micro-USDC = $0.01
+- `network` — Base Mainnet (chain ID 8453)
+
+### Step 3: Pay and Get Your PDR
+
+Sign an EIP-3009 `transferWithAuthorization` with your Ethereum key:
+
+- `from`: your wallet address
+- `to`: the `payTo` address from Step 2
+- `value`: `maxAmountRequired` from Step 2 (10000 = $0.01)
+- `validAfter`: current Unix timestamp
+- `validBefore`: current time + `maxTimeoutSeconds`
+- `nonce`: random 32-byte hex string
+
+Encode the signature as base64url JSON. Then send it with the `x-payment` header:
+
+```bash
+curl -X POST https://api.aotrust.link/notarize \
+  -H "Content-Type: application/json" \
+  -H "x-payment: YOUR_BASE64URL_ENCODED_SIGNATURE" \
+  -d '{"work_hash":"YOUR_SHA256_HEX"}'
+```
+
+**Response (HTTP 200):**
+```json
+{
+  "job_id": "550e8400-e29b-41d4-a716-446655440000",
+  "pdr_b64": "AwEFA1kuagAAAABub3...",
+  "tx_hash": "0x3c7133009a74...",
+  "payment_anchor_type": "X402_BASE"
+}
+```
+
+Done. `pdr_b64` is your 239-byte cryptographic proof.
 
 ---
 
-## Workflow A: x402 / USDC on Base (Recommended)
+## Verify Your PDR
 
-**Step 1: Probe**
-Call `notary_notarize_paid` with `work_hash`, WITHOUT payment header.
-Receive HTTP 402 with: `usdc_contract`, `payee_address`, `amount` (10000 = $0.01), `chain_id` (8453), `valid_until`.
+Go to `https://verify.aotrust.link` and enter the `job_id`.
 
-**Step 2: Sign**
-Sign EIP-3009 `transferWithAuthorization`:
-- `from`: your wallet
-- `to`: payee_address from step 1
-- `value`: 10000
-- `validAfter`: current timestamp
-- `validBefore`: valid_until from step 1
-- `nonce`: random 32-byte hex
+Or verify programmatically:
+```bash
+curl https://api.aotrust.link/v1/pdr/verify/YOUR_PDR_B64
+```
 
-Encode as base64url JSON: `{v, r, s, from, to, value, validAfter, validBefore, nonce}`.
-
-**Step 3: Submit**
-Call `notary_notarize_paid` again with same `work_hash` + header `x-payment: <base64url_json>`.
-Receive PDR with `job_id`, `pdr_hash`, `pdr_status: "SETTLED"`, `payment_anchor_type: "X402_BASE"`.
+Anyone can verify — no account, no key, no authentication required.
 
 ---
 
-## Workflow B: NEAR_DIRECT
+## What a PDR Proves
 
-**Step 1: Quote**
-Call `notary_quote`. Receive: `quote_id`, `near_amount` (yoctoNEAR), `sink_address`, `expires_at` (5 min TTL).
+- ✅ Your artifact (identified by its SHA-256 hash) existed at a specific time
+- ✅ Payment was settled on Base Mainnet (tx_hash verifiable on-chain)
+- ✅ The notary (notary-node.near) signed the record
+- ✅ The record is anchored to NEAR blockchain via daily Merkle root
 
-⚠️ The `quote_id` is mandatory in Step 3. It binds your payment to this specific notarization request. Do not reuse quote_ids or skip the quote step. If the quote expires before you complete Step 3, restart from Step 1. Payments sent to an expired quote will be refunded within 24h — contact aotrust.near if not received.
-
-**Step 2: Pay**
-Send exactly `near_amount` yoctoNEAR to `sink_address`. Get `tx_hash` (base58 NEAR transaction hash).
-
-**Step 3: Submit**
-Call `notary_notarize` with `work_hash`, `tx_hash`, `quote_id`.
-Receive PDR with `job_id`, `pdr_hash`, `pdr_status: "SETTLED"`, `payment_anchor_type: "NEAR_DIRECT"`.
-
----
-
-## Verification
-
-**Check status:**
-Call `notary_verify` with `job_id` or `work_hash`.
-- `"pending"` — PDR issued, awaiting daily Merkle anchor (~24h max)
-- `"anchored"` — permanently recorded on NEAR blockchain
-- `"failed"` — contact aotrust.near
-
-**Public verification (no MCP required):**
-`GET https://api.aotrust.link/v1/pdr/verify/{pdr_hash_base64url}`
-Returns JSON: `valid`, `work_hash`, `payment_anchor_type`, `timestamp`, `tx_hash`, `merkle_root`, `near_anchor_tx`, `on_chain_verified`.
-
----
-
-## Using Your PDR
-
-- **As deliverable hash:** Submit `pdr_hash` (SHA-256 of PDR) to Agent Market
-- **As dispute evidence:** Share verification URL — arbitration agents verify independently
-- **As audit trail:** Store `job_id` to re-retrieve PDR anytime
+A PDR does NOT reveal your artifact content — only its hash.
 
 ---
 
 ## Error Reference
 
-| Error | Action |
-|-------|--------|
-| 402 (no x-payment) | Expected on probe — proceed to sign |
-| 400 invalid_work_hash | Re-compute as sha256hex with correct serialization |
-| 400 quote_expired | Restart from quote step. Old payment refunded within 24h |
-| 400 payment_verification_failed | Check payment tx on explorer |
-| 409 duplicate_work_hash | Use `verify` with `work_hash` to retrieve existing PDR |
-| 429 rate_limited | Wait 60s and retry once. 60 req/min per IP |
-| 503 anchoring_delayed | PDR is valid, check back in 24h |
-
----
-
-## Agent Market Escrow (Advanced Workflow)
-
-Two-phase escrow-based notarization for NEAR Agent Market (market.near.ai).
-Uses PROVISIONAL PDR (NEAR_ESCROW_LOCK, 0x04) at work completion and
-SETTLED PDR (NEAR_ESCROW_SETTLED, 0x09) after escrow release.
-Flat $0.01 equivalent. See docs.aotrust.link for integration details.
+| Response | Meaning | Action |
+|----------|---------|--------|
+| HTTP 402 | Expected — payment required | Proceed to step 3 |
+| HTTP 400 | Invalid work_hash format | Must be 64-char lowercase hex |
+| HTTP 409 | Duplicate work_hash | Already notarized — use verify |
+| HTTP 429 | Rate limited | Wait 60 seconds, retry once |
 
 ---
 
 ## Notes
 
-- PDRs are immutable. Payment is non-refundable once PDR is issued.
-- Mainnet URL: `api.aotrust.link`. Staging: `api-staging.aotrust.link`.
-- Price: $0.01 USD flat fee per PDR.
-- Daily Merkle anchor posted to NEAR by `notary-node.near`.
-- Rate limits: 60 requests/minute per IP.
+- Price: **$0.01 USDC** flat per PDR. No tiers, no subscriptions.
+- PDRs are **immutable**. Once issued, they cannot be modified.
+- Payment is **non-refundable** after PDR issuance.
+- Daily Merkle root anchored to NEAR by `notary-node.near`.
+- Rate limit: 60 requests/minute per IP.
 - Canonical SKILL.md: https://github.com/GitSerge-crypto/aotrust-skills

@@ -6,7 +6,7 @@ description: >
 license: MIT
 metadata:
   author: aotrust
-  version: "3.4.0"
+  version: "3.4.1"
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify
   near-handle: aotrust
 ---
@@ -14,8 +14,16 @@ metadata:
 # AOTrust — Get a PDR in 3 Steps
 
 A PDR (Provenance Data Record) is a 239-byte cryptographic receipt proving
-a digital artifact existed at a specific point in time. Anchored daily to
-NEAR blockchain. $0.01 per proof. No account needed.
+that a digital artifact existed at a specific point in time.
+
+Works with any digital artifact:
+emails, documents, contracts, source code, AI outputs,
+research notes, datasets, photos, logs, sensor readings,
+and other digital records.
+
+The artifact itself is never uploaded — only its SHA-256 hash.
+
+Anchored daily to NEAR blockchain. $0.01 per proof. No account needed.
 
 ## What You Need
 
@@ -128,6 +136,44 @@ Anyone can verify — no account, no key, no authentication required.
 - ✅ The record is anchored to NEAR blockchain via daily Merkle root
 
 A PDR does NOT reveal your artifact content — only its hash.
+
+## Example Uses
+
+**Personal Records:** Email correspondence, family letters, personal notes, photographs.  
+Proves that a specific version of a file existed at a specific time.
+
+**AI Outputs:** Agent reports, LLM responses, generated code, research summaries.  
+Creates independent evidence of when an AI-generated artifact was produced.
+
+**Business Documents:** Contracts, proposals, specifications, financial reports.  
+Provides a timestamped provenance record for important documents.
+
+**Technical Artifacts:** Source code, configuration files, datasets, log files.  
+Creates a verifiable audit trail for technical work.
+
+**Compliance and Audit:** Regulatory evidence, internal approvals, process documentation.  
+Provides a cryptographically verifiable historical record.
+
+## Privacy
+
+AOTrust does not store or publish your artifact content.
+
+Only the SHA-256 hash of the artifact is included in the PDR.
+
+Anyone can verify the PDR, but the original artifact remains private unless you choose to share it.
+
+## Optional: Proof of Authorship (Planned)
+
+By default, AOTrust proves that a hash existed at a specific time.
+
+Future versions may optionally allow clients to sign the artifact hash with their own cryptographic key before notarization.
+
+This creates a stronger provenance chain:
+Client Key → Artifact Hash → AOTrust PDR → Blockchain Anchor
+
+Useful for: agent reputation, creator attribution, audit trails, dispute resolution.
+
+The standard PDR workflow remains unchanged and does not require client signatures.
 
 ---
 

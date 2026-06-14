@@ -19,7 +19,9 @@ NEAR blockchain. $0.01 per proof. No account needed.
 
 ## What You Need
 
-- An Ethereum wallet with at least $0.02 USDC on **Base Mainnet** (for fee + gas buffer)
+- An Ethereum wallet on **Base Mainnet** with:
+  - At least **$0.01 in USDC** (for the PDR fee)
+  - A small amount of **ETH** (for gas, typically less than $0.01)
 - Ability to make HTTP requests and sign EIP-3009 `transferWithAuthorization`
 
 ## How It Works

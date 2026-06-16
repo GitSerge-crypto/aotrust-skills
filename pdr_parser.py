@@ -255,32 +255,107 @@ def verify_pdr_signature(pdr_bytes: bytes, notary_pubkey_hex: str) -> bool:
         return False
 
 
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 2:
-        print("Usage: python3 pdr_parser.py <pdr_b64_or_hex> [notary_pubkey_hex]")
-        print("")
-        print("Parse and optionally verify an AOTrust PDR.")
-        print("  pdr_b64_or_hex: Base64 or hex-encoded PDR bytes")
-        print("  notary_pubkey_hex: Optional Ed25519 public key for signature verification")
-        sys.exit(1)
+def _decode_pdr_input(raw_arg: str, fmt: str = "auto") -> bytes:
+    """Decode a PDR from base64 or hex string.
 
-    raw_arg = sys.argv[1]
+    Args:
+        raw_arg: Base64 or hex-encoded PDR bytes.
+        fmt: "base64", "hex", or "auto" (try base64 first, then hex).
+
+    Returns:
+        Decoded PDR bytes.
+
+    Raises:
+        PDRParseError: If decoding fails or result is not a valid PDR.
+    """
+    import base64 as _base64
+
+    VALID_SIZES = {EXTERNAL_PDR_SIZE, 238, INTERNAL_PDR_SIZE}
+    VALID_VERSIONS = {0x02, 0x03}
+
+    def _try_base64(s: str) -> bytes:
+        padded = s + "=" * ((4 - len(s) % 4) % 4)
+        return _base64.b64decode(padded)
+
+    def _try_hex(s: str) -> bytes:
+        if len(s) % 2 != 0 or not all(c in "0123456789abcdefABCDEF" for c in s):
+            raise ValueError("not valid hex")
+        return bytes.fromhex(s)
+
+    def _looks_like_pdr(data: bytes) -> bool:
+        return len(data) in VALID_SIZES and data[0] in VALID_VERSIONS
+
+    if fmt == "base64":
+        return _try_base64(raw_arg)
+
+    if fmt == "hex":
+        return _try_hex(raw_arg)
+
+    # auto: try base64 first (most common), then hex, validate result
+    for decode_fn, label in [(_try_base64, "base64"), (_try_hex, "hex")]:
+        try:
+            data = decode_fn(raw_arg)
+            if _looks_like_pdr(data):
+                return data
+        except Exception:
+            continue
+
+    # Neither produced a valid PDR — try both without validation and report errors
+    errors = {}
+    for label, decode_fn in [("base64", _try_base64), ("hex", _try_hex)]:
+        try:
+            data = decode_fn(raw_arg)
+            errors[label] = (
+                f"decoded {len(data)} bytes, version 0x{data[0]:02x} "
+                f"(expected v0x02 or v0x03, size 238/239/193)"
+            )
+        except Exception as e:
+            errors[label] = str(e)
+
+    parts = [f"{k}: {v}" for k, v in errors.items()]
+    raise PDRParseError(
+        f"Input does not decode to a valid PDR. Tried: {'; '.join(parts)}"
+    )
+
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(
+        description="Parse and optionally verify an AOTrust PDR (v2.2/v2.3)."
+    )
+    parser.add_argument(
+        "--pdr",
+        required=True,
+        help="PDR data, base64 or hex encoded",
+    )
+    parser.add_argument(
+        "--pubkey",
+        default=None,
+        help="Ed25519 public key (hex) for signature verification",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["auto", "base64", "hex"],
+        default="auto",
+        help="Input encoding format (default: auto-detect)",
+    )
+    args = parser.parse_args()
+
     try:
-        if all(c in "0123456789abcdefABCDEF" for c in raw_arg) and len(raw_arg) % 2 == 0:
-            pdr_bytes = bytes.fromhex(raw_arg)
-        else:
-            import base64
-            padded = raw_arg + "=" * ((4 - len(raw_arg) % 4) % 4)
-            pdr_bytes = base64.b64decode(padded)
-    except Exception as e:
-        print(f"Error decoding input: {e}")
+        pdr_bytes = _decode_pdr_input(args.pdr, args.format)
+    except PDRParseError as e:
+        print(f"Decode error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except ValueError as e:
+        print(f"Decode error: {e}", file=sys.stderr)
         sys.exit(1)
 
     try:
         parsed = parse_external_pdr(pdr_bytes)
     except PDRParseError as e:
-        print(f"Parse error: {e}")
+        print(f"Parse error: {e}", file=sys.stderr)
         sys.exit(1)
 
     print(f"PDR Format:    {parsed.format_version}")
@@ -295,10 +370,9 @@ if __name__ == "__main__":
     print(f"Payment Hash:  {parsed.payment_hash.hex()}")
     print(f"Signature:     {parsed.sig_n.hex()[:32]}...")
 
-    if len(sys.argv) >= 3:
-        pubkey_hex = sys.argv[2]
+    if args.pubkey:
         try:
-            valid = verify_pdr_signature(pdr_bytes, pubkey_hex)
+            valid = verify_pdr_signature(pdr_bytes, args.pubkey)
             print(f"Signature:     {'VALID' if valid else 'INVALID'}")
         except ImportError as e:
             print(f"Signature:     skipped ({e})")

@@ -6,7 +6,7 @@ description: >
 license: MIT
 metadata:
   author: aotrust
-  version: "3.4.1"
+  version: "3.4.2"
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify
   near-handle: aotrust
 ---

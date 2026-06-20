@@ -6,7 +6,7 @@ description: >
 license: MIT
 metadata:
   author: aotrust
-  version: "3.5.1"
+  version: "3.6.0"
   mcp-endpoint: https://api.aotrust.link/mcp
   http-endpoint: https://api.aotrust.link/notarize
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify
@@ -30,7 +30,7 @@ Anchored daily to NEAR blockchain. $0.01 per proof. No account needed.
 
 | Interface | Best for | How |
 |-----------|----------|-----|
-| **MCP** (recommended for AI agents) | AI agents with MCP support | OAuth 2.1 → tools/list → notary_quote → notary_notarize_paid |
+| **MCP** (recommended for AI agents) | AI agents with MCP support | OAuth 2.1 → tools/list → notary_quote → HTTP /notarize (pay) → notary_verify |
 | **HTTP API** (for developers) | Direct integration, scripts, CI/CD | POST /notarize → 402 → pay → 200 |
 
 Both interfaces produce the same PDR. Pick one.
@@ -59,27 +59,21 @@ OAuth 2.1 with PKCE (S256). Discovery:
 
 | Tool | Purpose | Payment? |
 |------|---------|----------|
-| `notary_quote` | Get price + sink address for a work_hash | Free |
-| `notary_notarize` | Notarize via NEAR_DIRECT payment | NEAR |
-| `notary_notarize_paid` | Notarize via x402 USDC (DISCOVERY ONLY — see note) | $0.01 USDC |
+| `notary_quote` | Get price + payment details for a work_hash | Free |
+| `notary_notarize` | NEAR_DIRECT payment (not available on mainnet) | — |
+| `notary_notarize_paid` | x402 USDC — discovery only, cannot be called via MCP (see flow below) | $0.01 USDC |
 | `notary_verify` | Verify a notarization by job_id | Free |
 
-### MCP Flow (x402 USDC — recommended)
+### MCP Flow (x402 USDC — the only production path)
 
-The x402 payment flow uses HTTP, not MCP tool calls directly:
+x402 payment requires HTTP calls — MCP tool calls alone cannot complete the flow:
 
-1. Call `notary_quote` with `work_hash` → get price ($0.01 USDC) and quote details
-2. POST to `https://api.aotrust.link/notarize` with `{"work_hash": "..."}` → get 402 payment requirements
-3. Sign EIP-3009 `transferWithAuthorization` with your Ethereum key
-4. POST to `https://api.aotrust.link/notarize` again with `x-payment` header → get 200 + PDR
-5. Call `notary_verify` with the `job_id` from step 4 → confirm `anchored`
+1. **MCP:** Call `notary_quote` with `work_hash` → get price ($0.01 USDC) and quote details
+2. **HTTP:** POST to `https://api.aotrust.link/notarize` with `{"work_hash": "..."}` → get 402 payment requirements (see Step 2 below for format)
+3. **HTTP:** Sign EIP-3009 `transferWithAuthorization` with your Ethereum key, then POST to `https://api.aotrust.link/notarize` again with `x-payment` header → get 200 + PDR (see Step 3 below for format)
+4. **MCP:** Call `notary_verify` with the `job_id` from step 3 → confirm `anchored`
 
-### MCP Flow (NEAR_DIRECT — alternative)
-
-1. Call `notary_quote` → get NEAR amount + sink address
-2. Send NEAR to sink address on-chain
-3. Call `notary_notarize` with `work_hash` + `tx_hash` → get `job_id`
-4. Call `notary_verify` with `job_id` → poll until `anchored`
+> **Note:** `notary_notarize_paid` appears in `tools/list` for discovery but cannot be called via MCP — x402 payment headers are not supported in MCP tool calls. Use HTTP POST `/notarize` for the actual payment step.
 
 ---
 
@@ -152,10 +146,12 @@ curl -X POST https://api.aotrust.link/notarize \
 **Response (HTTP 200):**
 ```json
 {
+  "status": "notarized",
   "job_id": "550e8400-e29b-41d4-a716-446655440000",
-  "pdr_b64": "AwEFA1kuagAAAABub3...",
+  "pdr_b64": "AwEFXRE3agAAAABub3...",
   "tx_hash": "0x3c7133009a74...",
-  "payment_anchor_type": "X402_BASE"
+  "payment_anchor_type": "X402_BASE",
+  "network": "base"
 }
 ```
 
@@ -196,10 +192,15 @@ Response:
   "valid": true,
   "version": 3,
   "payment_anchor_type": "X402_BASE",
+  "subject_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "work_hash": "d8cb8ce666bdc8053b79029116d937ba2c99640f037877fbafa6320092beef6a",
+  "timestamp_utc": 1781993821,
   "issuer_id": "notary-node.near",
+  "merkle_root": "e4e495d4216391f3f78332870d2c025c70a1dd0b63d24d059ce3ece9aabd5b14",
+  "payment_hash": "cd87ee2300000000000000000000000000000000000000000000000000000000",
   "signature_valid": true,
-  "merkle_root": "f6dc85fc02221d99cb66b12e49ee3c6626b5949e4623662a4f36b243c08de417",
-  "payment_hash": "679e323c00000000000000000000000000000000000000000000000000000000"
+  "tx_verified_on_chain": false,
+  "error": null
 }
 ```
 

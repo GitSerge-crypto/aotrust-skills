@@ -6,7 +6,7 @@ description: >
 license: MIT
 metadata:
   author: aotrust
-  version: "3.5.0"
+  version: "3.5.1"
   mcp-endpoint: https://api.aotrust.link/mcp
   http-endpoint: https://api.aotrust.link/notarize
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify

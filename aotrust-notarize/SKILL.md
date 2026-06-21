@@ -6,7 +6,7 @@ description: >
 license: MIT
 metadata:
   author: aotrust
-  version: "3.6.0"
+  version: "3.6.1"
   mcp-endpoint: https://api.aotrust.link/mcp
   http-endpoint: https://api.aotrust.link/notarize
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify
@@ -68,7 +68,7 @@ OAuth 2.1 with PKCE (S256). Discovery:
 
 x402 payment requires HTTP calls — MCP tool calls alone cannot complete the flow:
 
-1. **MCP:** Call `notary_quote` with `work_hash` → get price ($0.01 USDC) and quote details
+1. **MCP:** Call `notary_quote` with `work_hash` (see "Step 1: Compute the Work Hash" below) → get price ($0.01 USDC) and quote details
 2. **HTTP:** POST to `https://api.aotrust.link/notarize` with `{"work_hash": "..."}` → get 402 payment requirements (see Step 2 below for format)
 3. **HTTP:** Sign EIP-3009 `transferWithAuthorization` with your Ethereum key, then POST to `https://api.aotrust.link/notarize` again with `x-payment` header → get 200 + PDR (see Step 3 below for format)
 4. **MCP:** Call `notary_verify` with the `job_id` from step 3 → confirm `anchored`
@@ -83,10 +83,26 @@ x402 payment requires HTTP calls — MCP tool calls alone cannot complete the fl
 
 Hash your artifact with SHA-256. This is what gets notarized — not the artifact itself.
 
-```python
-import hashlib
-work_hash = hashlib.sha256(b"your digital artifact content").hexdigest()
-```
+**Key principle:** The hash must be reproducible by a third party who has the same artifact. Hash the artifact content directly — not metadata about it, not the HTTP response, not the chat history.
+
+#### What to hash (by artifact type)
+
+| Artifact type | What to hash | Python example |
+|---------------|-------------|-----------------|
+| AI text output | The raw response text, UTF-8 encoded | `hashlib.sha256(response_text.encode('utf-8')).hexdigest()` |
+| Source code file | The file content as bytes | `hashlib.sha256(open('main.py','rb').read()).hexdigest()` |
+| JSON data | Canonical JSON (sorted keys, no whitespace) | `hashlib.sha256(json.dumps(data, sort_keys=True, separators=(',',':')).encode()).hexdigest()` |
+| Binary file (image, PDF, etc.) | The file bytes directly | `hashlib.sha256(open('screenshot.png','rb').read()).hexdigest()` |
+| Agent decision | The specific decision string, not the full log | `hashlib.sha256(decision_text.encode('utf-8')).hexdigest()` |
+| Structured output | The serialized output string (deterministic format) | `hashlib.sha256(str(output).encode('utf-8')).hexdigest()` |
+
+#### Common mistakes
+
+- ❌ Hashing the HTTP response (includes headers, status code) — hash only the body
+- ❌ Hashing the chat history (includes user messages) — hash only the AI output
+- ❌ Hashing with different encoding each time — always use UTF-8 for text
+- ❌ Hashing the file path string — hash the file content bytes
+- ✅ Hash exactly the bytes that constitute the artifact, nothing more, nothing less
 
 ### Step 2: Request Notarization (expect HTTP 402)
 
@@ -285,3 +301,9 @@ The standard PDR workflow remains unchanged and does not require client signatur
 - Rate limit: 60 requests/minute per IP.
 - PDR spec: https://github.com/GitSerge-crypto/aotrust-skills/blob/main/pdr-spec.md
 - PDR parser (standalone, offline): https://github.com/GitSerge-crypto/aotrust-skills/blob/main/pdr_parser.py
+
+---
+
+## Changelog
+
+- v3.6.1 — Added "What to Hash" examples (Step 1), common mistakes section

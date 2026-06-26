@@ -1,19 +1,59 @@
-# AOTrust — Skills
+# AOTrust — Cryptographic Proof of Existence for AI Agents
 
-Public skills directory for the AOTrust notary service.
+![Mainnet Live](https://img.shields.io/badge/mainnet-LIVE-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![PDR v2.3](https://img.shields.io/badge/PDR-v2.3-blue)
+![x402](https://img.shields.io/badge/payment-x402-orange)
 
-## Skills
+AOTrust issues PDRs (Provenance Data Records) — 239-byte cryptographic receipts proving a digital artifact existed at a specific time. $0.01 USDC on Base via x402. Anchored daily to NEAR blockchain. No account needed.
 
-### aotrust-notarize
-Cryptographic notarization for AI agent work output. Flat $0.01 per PDR. See docs.aotrust.link
-- [SKILL.md](aotrust-notarize/SKILL.md)
-- MCP server: `https://api.aotrust.link/mcp`
-- NEAR handle: `aotrust`
+## Quickstart
+
+```bash
+# 1. Compute SHA-256 hash of your artifact
+HASH=$(echo -n "Hello AOTrust" | sha256sum | cut -d' ' -f1)
+
+# 2. Request notarization → get 402 payment details
+curl -X POST https://api.aotrust.link/notarize \
+  -H "Content-Type: application/json" \
+  -d "{\"work_hash\":\"$HASH\",\"agent_sig\":\"\",\"agent_pubkey\":\"\"}"
+
+# 3. Pay $0.01 USDC on Base (EIP-3009), then POST with x-payment header
+# Full example: see SKILL.md → "Step 3: Pay"
+```
+
+For full EIP-3009 signing code (Python + ethers.js examples), see [SKILL.md](aotrust-notarize/SKILL.md).
+
+## Interfaces
+
+| Interface | Best for | Auth |
+|-----------|----------|------|
+| HTTP API | Developers, scripts, CI/CD | x402 payment (no API key needed) |
+| MCP | AI agents (Claude, Cursor) | OAuth 2.1 PKCE |
+
+Endpoints:
+- API: `https://api.aotrust.link/notarize`
+- MCP: `https://api.aotrust.link/mcp`
+- Verify: `https://verify.aotrust.link`
+- Docs: `https://docs.aotrust.link`
 
 ## PDR Specification & Tools
 
-### [pdr-spec.md](pdr-spec.md)
-PDR v2.3 binary format specification — Internal (193B) and External (239B) structures, field offsets, PaymentAnchorType enum, NEP-413 signature scheme, and version history (v2.2 → v2.3).
+- [pdr-spec.md](pdr-spec.md) — PDR v2.3 binary format (Internal 193B + External 239B)
+- [pdr_parser.py](pdr_parser.py) — standalone parser, zero dependencies, offline verification
+- [aotrust-notarize/SKILL.md](aotrust-notarize/SKILL.md) — full integration guide for AI agents
 
-### [pdr_parser.py](pdr_parser.py)
-Standalone PDR parser and signature verifier. Zero AOTrust dependencies, works offline. Parses v2.2 and v2.3 external PDRs, verifies Ed25519/NEP-413 signatures given a public key. Run: `python3 pdr_parser.py <pdr_b64_or_hex> [notary_pubkey_hex]`
+## Comparison
+
+| Feature | AOTrust | Chainlink | OpenTimestamps | Notary.fyi |
+|---------|---------|----------|----------------|-----------|
+| Price/PDR | $0.01 | $0.25+ | Free (slow) | $0.50+ |
+| Payment rail | x402 USDC | LINK | Bitcoin TX | Stripe |
+| PDR format | 239B binary | Oracle data | OTS file | PDF |
+| AI agent native | MCP + HTTP | No | No | No |
+| Blockchain anchor | NEAR (daily) | Ethereum | Bitcoin | None |
+| Offline verify | Yes (pdr_parser.py) | No | Yes | No |
+
+## License
+
+MIT

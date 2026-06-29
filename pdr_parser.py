@@ -146,6 +146,31 @@ def parse_external_pdr(data: bytes) -> ParsedExternalPDR:
             payload_bytes=payload_bytes,
             format_version="v2.3",
         )
+    elif version == 0x04:
+        if len(data) != EXTERNAL_PDR_SIZE:
+            raise PDRParseError(
+                f"v2.4 PDR size mismatch: got {len(data)}, expected {EXTERNAL_PDR_SIZE}"
+            )
+        payload_bytes = data[:EXTERNAL_PAYLOAD_SIZE]
+        sig_n = data[EXTERNAL_PAYLOAD_SIZE:EXTERNAL_PAYLOAD_SIZE + ED25519_SIG_SIZE]
+        (ver, sig_scheme, pat_byte, ts, issuer, subject_hash, payload_hash,
+         merkle_root, payment_hash) = struct.unpack_from(
+            "<BBBQ36s32s32s32s32s", data, offset=0
+        )
+        return ParsedExternalPDR(
+            version=ver,
+            sig_scheme=sig_scheme,
+            payment_anchor_type=pat_byte,
+            timestamp_utc=ts,
+            issuer_id=issuer,
+            subject_hash=subject_hash,
+            payload_hash=payload_hash,
+            merkle_root=merkle_root,
+            payment_hash=payment_hash,
+            sig_n=sig_n,
+            payload_bytes=payload_bytes,
+            format_version="v2.4",
+        )
     elif version == 0x02:
         v22_size = 238
         v22_payload_size = 174
@@ -271,7 +296,7 @@ def _decode_pdr_input(raw_arg: str, fmt: str = "auto") -> bytes:
     import base64 as _base64
 
     VALID_SIZES = {EXTERNAL_PDR_SIZE, 238, INTERNAL_PDR_SIZE}
-    VALID_VERSIONS = {0x02, 0x03}
+    VALID_VERSIONS = {0x02, 0x03, 0x04}
 
     def _try_base64(s: str) -> bytes:
         padded = s + "=" * ((4 - len(s) % 4) % 4)

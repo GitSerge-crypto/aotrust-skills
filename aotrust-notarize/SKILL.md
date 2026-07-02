@@ -322,4 +322,5 @@ The standard PDR workflow remains unchanged and does not require client signatur
 
 ## Changelog
 
+- v3.6.2 — Bilateral Signature (v0x04): agent_sig + agent_pubkey → binding hash PDR. Verify response: payload_hash + binding_hash fields.
 - v3.6.1 — Added "What to Hash" examples (Step 1), common mistakes section

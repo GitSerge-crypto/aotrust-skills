@@ -1,6 +1,6 @@
-# PDR v2.3 Format Specification
+# PDR Format Specification (v2.3 + v2.4 Bilateral)
 
-<!-- Based on STATE_OF_TRUTH v8.4 (2026-06-11). Regenerate when PDR version changes. -->
+<!-- Based on STATE_OF_TRUTH v8.6 (2026-07-02). Regenerate when PDR version changes. -->
 
 Provenance Data Record (PDR) — the cryptographically signed artifact issued by AOTrust.
 
@@ -26,13 +26,13 @@ Total:  1 + 1 + 1 + 8 + 36 + 32 + 32 + 32 + 32 + 64 = 239 bytes
 
 | Offset | Size | Field | Type | Description |
 |--------|------|-------|------|-------------|
-| 0 | 1 | `version` | U8 | PDR version = `0x03` |
+| 0 | 1 | `version` | U8 | PDR version: `0x03` (ordinary) or `0x04` (bilateral) |
 | 1 | 1 | `sig_scheme` | U8 | Signature scheme: `0x01` = Ed25519 |
 | 2 | 1 | `payment_anchor_type` | U8 | Payment rail enum (see below) |
 | 3 | 8 | `timestamp_utc` | U64 | Unix timestamp in seconds |
 | 11 | 36 | `issuer_id` | bytes(36) | Notary NEAR account, NUL-padded (e.g. `notary-node.near`) |
 | 47 | 32 | `subject_hash` | bytes(32) | SHA-256 of agent account |
-| 79 | 32 | `payload_hash` | bytes(32) | SHA-256 of work result |
+| 79 | 32 | `payload_hash` | bytes(32) | v0x03: SHA-256 of work result. v0x04: Binding Hash = `sha256(work_hash + sig_A + agent_pubkey)` |
 | 111 | 32 | `merkle_root` | bytes(32) | Merkle root from daily on-chain anchor |
 | 143 | 32 | `payment_hash` | bytes(32) | Payment transaction hash (multi-chain) |
 | 175 | 64 | `signature` | bytes(64) | Ed25519 signature (NEP-413) |
@@ -63,7 +63,7 @@ Total:  1 + 1 + 16 + 32 + 32 + 8 + 8 + 8 + 4 + 8 + 1 + 2 + 3 + 1 + 4 + 64 = 193 
 
 | Offset | Size | Field | Type | Description |
 |--------|------|-------|------|-------------|
-| 0 | 1 | `version` | U8 | `0x03` |
+| 0 | 1 | `version` | U8 | `0x03` (both ordinary and bilateral use same internal version; bilateral marked by `signing_mode=0x02`) |
 | 1 | 1 | `composite` | U8 | Composite nibble byte (see below) |
 | 2 | 16 | `task_id` | bytes(16) | Task UUID |
 | 18 | 32 | `agent_account_hash` | bytes(32) | SHA-256 of agent account |
@@ -138,7 +138,17 @@ All types are flat $0.01 per PDR. The anchor type is a technical attribute, not 
 
 ## Version History
 
-### v2.3 (current) — version byte `0x03`
+### v2.4 (bilateral) — version byte `0x04`
+
+- Same 239-byte external format as v2.3 — no size change
+- `payload_hash` semantics: Binding Hash = `sha256(work_hash + sig_A_bytes + agent_pubkey_bytes)`
+- Produced when `agent_sig` + `agent_pubkey` are provided in notarize request
+- `agent_sig` stored in `notary_ledger.agent_sig` column (TEXT)
+- Internal PDR `signing_mode` = `0x02` (bilateral marker)
+- Price: $0.01 (same as ordinary)
+- Parser: `format_version="v2.4"`, same struct unpack as v2.3
+
+### v2.3 (ordinary) — version byte `0x03`
 
 - Added `payment_anchor_type` field (1 byte) to External PDR at offset 2
 - External PDR grew from 238 → 239 bytes

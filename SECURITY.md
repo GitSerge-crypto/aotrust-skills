@@ -11,6 +11,6 @@ AOTrust skills and MCP server will NEVER:
 
 ## Verification
 All PDR receipts are verifiable at:
-https://api.aotrust.link/v1/pdr/verify/{pdr_hash}
+https://api.aotrust.link/v1/pdr/verify/{pdr_b64}
 
 Source code: https://github.com/GitSerge-crypto/aotrust-skills

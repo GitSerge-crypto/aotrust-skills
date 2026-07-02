@@ -2,10 +2,10 @@
 
 ![Mainnet Live](https://img.shields.io/badge/mainnet-LIVE-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![PDR v2.3](https://img.shields.io/badge/PDR-v2.3-blue)
+![PDR v2.3/v2.4](https://img.shields.io/badge/PDR-v2.3%2Fv2.4-blue)
 ![x402](https://img.shields.io/badge/payment-x402-orange)
 
-AOTrust issues PDRs (Provenance Data Records) — 239-byte cryptographic receipts proving a digital artifact existed at a specific time. $0.01 USDC on Base via x402. Anchored daily to NEAR blockchain. No account needed.
+AOTrust issues PDRs (Provenance Data Records) — 239-byte cryptographic receipts proving a digital artifact existed at a specific time. $0.01 USDC on Base via x402. Anchored daily to NEAR blockchain. No account needed. Supports ordinary (v0x03) and bilateral (v0x04) signatures.
 
 ## Quickstart
 
@@ -39,7 +39,7 @@ Endpoints:
 
 ## PDR Specification & Tools
 
-- [pdr-spec.md](pdr-spec.md) — PDR v2.3 binary format (Internal 193B + External 239B)
+- [pdr-spec.md](pdr-spec.md) — PDR v2.3/v2.4 binary format (Internal 193B + External 239B, ordinary + bilateral)
 - [pdr_parser.py](pdr_parser.py) — standalone parser, zero dependencies, offline verification
 - [aotrust-notarize/SKILL.md](aotrust-notarize/SKILL.md) — full integration guide for AI agents
 

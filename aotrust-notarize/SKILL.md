@@ -3,10 +3,13 @@ name: aotrust-notarize
 description: >
   Issue a cryptographic proof (PDR) that a digital artifact existed at a specific time.
   Pay $0.01 USDC on Base via x402. Anchored daily to NEAR blockchain. Publicly verifiable.
+  ONLY invoke when the user explicitly requests notarization or proof-of-existence for a
+  specific artifact. This skill performs a paid external API call ($0.01 USDC, irreversible).
+  Do NOT invoke proactively or as part of unrelated workflows.
 license: MIT
 metadata:
   author: aotrust
-  version: "3.6.2"
+  version: "3.7.0"
   mcp-endpoint: https://api.aotrust.link/mcp
   http-endpoint: https://api.aotrust.link/notarize
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify
@@ -14,6 +17,24 @@ metadata:
 ---
 
 # AOTrust — Cryptographic Proof of Existence
+
+## ⚠ Before You Start — Security & Consent
+
+This skill interacts with an **external paid API**. Read this before invoking.
+
+| What leaves your machine | Where it goes | Reversible? |
+|--------------------------|---------------|-------------|
+| `work_hash` (SHA-256 of your artifact) | api.aotrust.link | No — hash is public in the PDR |
+| `agent_sig` + `agent_pubkey` (optional, bilateral) | api.aotrust.link | No — stored in notary ledger |
+| EIP-3009 payment signature | Base Mainnet (on-chain) | No — $0.01 USDC, irreversible |
+
+**Rules:**
+- **Confirm with the user** before notarizing. Show the artifact hash and ask: "Notarize this for $0.01 USDC?"
+- **Never use an unattended wallet.** Payment requires manual approval for every transaction.
+- **Do not let the agent manage private keys.** The user signs EIP-3009 manually or via a wallet that requires confirmation.
+- The artifact itself is never uploaded — only its hash. But the hash is public in the PDR and on NEAR blockchain.
+
+---
 
 A PDR (Provenance Data Record) is a 239-byte cryptographic receipt proving
 that a digital artifact existed at a specific point in time.
@@ -283,17 +304,19 @@ AOTrust does not store or publish your artifact content.
 Only the SHA-256 hash of the artifact is included in the PDR.
 Anyone can verify the PDR, but the original artifact remains private unless you choose to share it.
 
-## Optional: Proof of Authorship (Planned)
+## Proof of Authorship (Bilateral Signature, v0x04)
 
 By default, AOTrust proves that a hash existed at a specific time.
-Future versions may optionally allow clients to sign the artifact hash with their own cryptographic key before notarization.
+For stronger provenance, clients can sign the artifact hash with their own Ed25519 key before notarization — this produces a **bilateral PDR (v0x04)** with a binding hash.
 
-This creates a stronger provenance chain:
-Client Key → Artifact Hash → AOTrust PDR → Blockchain Anchor
+This creates a non-repudiable provenance chain:
+Client Key → Artifact Hash → Binding Hash → AOTrust PDR → Blockchain Anchor
 
-Useful for: agent reputation, creator attribution, audit trails, dispute resolution.
+See the **Bilateral Signature** section under Step 3 above for implementation details.
 
-The standard PDR workflow remains unchanged and does not require client signatures.
+Useful for: agent reputation, creator attribution, audit trails, dispute resolution, multi-agent pipelines.
+
+The standard PDR workflow (v0x03) remains available and does not require client signatures.
 
 ---
 
@@ -322,5 +345,6 @@ The standard PDR workflow remains unchanged and does not require client signatur
 
 ## Changelog
 
+- v3.7.0 — ClawHub security audit fixes: explicit trigger boundaries in description, Security & Consent section (external transmission warnings, user confirmation rules, wallet safety), updated Proof of Authorship from "Planned" to implemented (Bilateral Signature v0x04).
 - v3.6.2 — Bilateral Signature (v0x04): agent_sig + agent_pubkey → binding hash PDR. Verify response: payload_hash + binding_hash fields.
 - v3.6.1 — Added "What to Hash" examples (Step 1), common mistakes section

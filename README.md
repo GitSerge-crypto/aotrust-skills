@@ -54,6 +54,38 @@ Endpoints:
 | Blockchain anchor | NEAR (daily) | Ethereum | Bitcoin | None |
 | Offline verify | Yes (pdr_parser.py) | No | Yes | No |
 
+## GitHub Action
+
+Notarize build artifacts or AI-generated files directly in CI/CD — free, no wallet needed.
+
+```yaml
+- uses: GitSerge-crypto/aotrust-skills/action@v1
+  with:
+    files: dist/*
+```
+
+Outputs: `shield_id`, `verify_url`, `pdr_b64`. Results appear in `$GITHUB_STEP_SUMMARY` as a markdown table with verification links.
+
+### Example workflow
+
+```yaml
+name: Release
+on:
+  release:
+    types: [published]
+
+jobs:
+  notarize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: GitSerge-crypto/aotrust-skills/action@v1
+        with:
+          files: dist/*
+      - name: Show shield ID
+        run: echo "Shield ID: ${{ steps.notarize.outputs.shield_id }}"
+```
+
 ## License
 
 MIT

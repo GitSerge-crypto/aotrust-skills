@@ -9,7 +9,7 @@ description: >
 license: MIT
 metadata:
   author: aotrust
-  version: "3.7.0"
+  version: "3.8.0"
   mcp-endpoint: https://api.aotrust.link/mcp
   http-endpoint: https://api.aotrust.link/notarize
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify
@@ -76,16 +76,26 @@ OAuth 2.1 with PKCE (S256). Discovery:
 - Authorize: `GET https://api.aotrust.link/oauth/authorize`
 - Token: `POST https://api.aotrust.link/oauth/token`
 
-### Available Tools (4)
+### Available Tools (5)
 
 | Tool | Purpose | Payment? |
 |------|---------|----------|
+| `notary_free` | Create instant free cryptographic proof (UNPAID PDR), rate limited (5/IP/day) | Free |
 | `notary_quote` | Get price + payment details for a work_hash | Free |
 | `notary_notarize` | NEAR_DIRECT payment (not available on mainnet) | — |
 | `notary_notarize_paid` | x402 USDC — discovery only, cannot be called via MCP (see flow below) | $0.01 USDC |
 | `notary_verify` | Verify a notarization by job_id | Free |
 
-### MCP Flow (x402 USDC — the only production path)
+### MCP Flow — Free Tier (no wallet, 1 step)
+
+For instant free proof without payment:
+
+1. **MCP:** Call `notary_free` with `work_hash` (64 hex) → get `shield_id`, `pdr_b64`, `verify_url`
+2. Done. No wallet, no payment. Rate limited: 5/IP/day, 1000/day global.
+
+> For on-chain settlement proof (payment-bound PDR with tx_hash on Base), use the paid flow below.
+
+### MCP Flow (x402 USDC — paid, on-chain settlement)
 
 x402 payment requires HTTP calls — MCP tool calls alone cannot complete the flow:
 
@@ -345,6 +355,7 @@ The standard PDR workflow (v0x03) remains available and does not require client 
 
 ## Changelog
 
+- v3.8.0 — Added notary_free tool for instant free-tier notarization via MCP without wallet. Updated tools table (4→5), added Free Tier MCP Flow section.
 - v3.7.0 — ClawHub security audit fixes: explicit trigger boundaries in description, Security & Consent section (external transmission warnings, user confirmation rules, wallet safety), updated Proof of Authorship from "Planned" to implemented (Bilateral Signature v0x04).
 - v3.6.2 — Bilateral Signature (v0x04): agent_sig + agent_pubkey → binding hash PDR. Verify response: payload_hash + binding_hash fields.
 - v3.6.1 — Added "What to Hash" examples (Step 1), common mistakes section

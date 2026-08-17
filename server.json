@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.gitserge-crypto/aotrust-notary",
+  "name": "io.github.GitSerge-crypto/aotrust-notary",
   "title": "AOTrust Notarization & Evidence Server",
   "description": "Cryptographic proof of existence for AI agents. Base x402, NEAR anchored. Free tier.",
   "repository": {
@@ -14,7 +14,7 @@
     {
       "registryType": "pypi",
       "identifier": "aotrust-protocol",
-      "version": "2.3.1",
+      "version": "2.3.2",
       "transport": {
         "type": "streamable-http",
         "url": "https://api.aotrust.link/mcp"

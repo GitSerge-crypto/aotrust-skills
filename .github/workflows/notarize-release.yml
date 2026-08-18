@@ -1,0 +1,16 @@
+name: Notarize Artifacts
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  notarize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: AOTrust Notarize
+        uses: GitSerge-crypto/aotrust-skills/action@v1
+        with:
+          files: 'README.md'

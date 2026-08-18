@@ -1,6 +1,6 @@
 # AOTrust — Cryptographic Proof of Existence for AI Agents
 
-[![Protected by AOTrust](https://img.shields.io/badge/AOTrust-Notarized-0ea5e9?logo=shield)](https://verify.aotrust.link)
+[![Protected by AOTrust](https://img.shields.io/badge/AOTrust-Notarized-0ea5e9)](https://verify.aotrust.link/s/40aefae4)
 ![Mainnet Live](https://img.shields.io/badge/mainnet-LIVE-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![PDR v2.3/v2.4](https://img.shields.io/badge/PDR-v2.3%2Fv2.4-blue)

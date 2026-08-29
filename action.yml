@@ -1,0 +1,36 @@
+name: 'AOTrust Notarize & Provenance'
+author: 'GitSerge-crypto'
+branding:
+  icon: 'shield'
+  color: 'blue'
+description: 'Cryptographic proof of existence and tamper-evidence for build artifacts'
+inputs:
+  files:
+    description: 'File or glob pattern to notarize'
+    required: true
+  api_url:
+    description: 'AOTrust API endpoint'
+    required: false
+    default: 'https://api.aotrust.link'
+outputs:
+  shield_id:
+    description: 'Shield ID (8 hex chars)'
+    value: ${{ steps.notarize.outputs.shield_id }}
+  verify_url:
+    description: 'Verification URL'
+    value: ${{ steps.notarize.outputs.verify_url }}
+  pdr_b64:
+    description: 'Base64-encoded PDR'
+    value: ${{ steps.notarize.outputs.pdr_b64 }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Notarize files
+      id: notarize
+      shell: bash
+      run: |
+        python3 ${{ github.action_path }}/notarize.py \
+          --files "${{ inputs.files }}" \
+          --api-url "${{ inputs.api_url }}" \
+          --github-output "$GITHUB_OUTPUT" \
+          --github-summary "$GITHUB_STEP_SUMMARY"

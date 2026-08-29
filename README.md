@@ -60,7 +60,7 @@ Endpoints:
 Notarize build artifacts or AI-generated files directly in CI/CD — free, no wallet needed.
 
 ```yaml
-- uses: GitSerge-crypto/aotrust-skills/action@v1
+- uses: GitSerge-crypto/aotrust-skills@v1.1
   with:
     files: dist/*
 ```
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: GitSerge-crypto/aotrust-skills/action@v1
+      - uses: GitSerge-crypto/aotrust-skills@v1.1
         with:
           files: dist/*
       - name: Show shield ID

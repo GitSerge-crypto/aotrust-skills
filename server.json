@@ -9,16 +9,25 @@
   },
   "homepage": "https://docs.aotrust.link",
   "license": "MIT",
-  "version": "2.3.0",
+  "version": "2.3.3",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "aotrust-protocol",
-      "version": "2.3.2",
+      "version": "2.3.3",
       "transport": {
         "type": "streamable-http",
         "url": "https://api.aotrust.link/mcp"
-      }
+      },
+      "environmentVariables": [
+        {
+          "name": "AOTRUST_BASE_URL",
+          "description": "AOTrust API base URL",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "https://api.aotrust.link/v1"
+        }
+      ]
     }
   ]
 }

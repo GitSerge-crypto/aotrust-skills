@@ -8,6 +8,8 @@ on:
 jobs:
   notarize:
     runs-on: ubuntu-latest
+    env:
+      AO_TRUST_KEY: ${{ secrets.AO_TRUST_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: AOTrust Notarize

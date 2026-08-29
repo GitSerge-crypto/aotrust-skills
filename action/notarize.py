@@ -38,10 +38,16 @@ def compute_sha256(filepath):
 def notarize_file(work_hash, api_url):
     """Call AOTrust free tier API to notarize a work hash."""
     payload = json.dumps({"work_hash": work_hash}).encode("utf-8")
+    headers = {"Content-Type": "application/json", "User-Agent": "AOTrust-Action/1.0"}
+    # Optional CI key (from GitHub Secrets): unlocks the dedicated CI rate limit
+    # (50/24h per key) instead of the shared per-IP free limit (5/24h).
+    api_key = os.environ.get('AO_TRUST_KEY', '')
+    if api_key:
+        headers['X-Api-Key'] = api_key
     req = urllib.request.Request(
         f"{api_url}/v1/shield/free",
         data=payload,
-        headers={"Content-Type": "application/json", "User-Agent": "AOTrust-Action/1.0"},
+        headers=headers,
         method="POST",
     )
     with urllib.request.urlopen(req, timeout=30) as resp:

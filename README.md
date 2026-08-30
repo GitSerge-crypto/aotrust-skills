@@ -1,5 +1,6 @@
 # AOTrust — Cryptographic Proof of Existence for AI Agents
 
+[![M8ven Score](https://m8ven.ai/badge/mcp/gitserge-crypto-aotrust-skills-g3hz21?v=0f2c915f775a2efe4292a97d389f921c)](https://m8ven.ai/mcp/gitserge-crypto-aotrust-skills-g3hz21)
 [![Protected by AOTrust](https://img.shields.io/badge/AOTrust-Notarized-0ea5e9)](https://verify.aotrust.link/s/40aefae4)
 ![Mainnet Live](https://img.shields.io/badge/mainnet-LIVE-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)

@@ -9,6 +9,22 @@
 
 AOTrust issues PDRs (Provenance Data Records) — 239-byte cryptographic receipts proving a digital artifact existed at a specific time. $0.01 USDC on Base via x402. Anchored daily to NEAR blockchain. No account needed. Supports ordinary (v0x03) and bilateral (v0x04) signatures.
 
+**Positioning: an Independent External Provenance Checkpoint.** Native
+attestations (Sigstore, GitHub artifact attestations) verify a build *inside*
+the CI system that produced it. AOTrust complements them: it issues a signed
+certificate *outside* GitHub/Microsoft infrastructure and anchors it daily to
+the NEAR blockchain — so provenance survives even if the repository is
+rewritten, the CI logs disappear, or the attestation store is unavailable.
+Use both.
+
+## Agent Checkpoint (new)
+
+Connect your AI coding agent in 60 seconds and make it notarize
+plan/patch/release checkpoints — free tier, no account:
+**[agent-checkpoint/](agent-checkpoint/)** — mcp.json drop-ins for Cursor,
+Cline, and any MCP client, plus a copy-paste `AGENTS.md` block
+(`Provenance: <Shield ID>` in commits).
+
 ## Quickstart
 
 ```bash
@@ -30,8 +46,8 @@ For full EIP-3009 signing code (Python + ethers.js examples), see [SKILL.md](aot
 
 | Interface | Best for | Auth |
 |-----------|----------|------|
-| HTTP API | Developers, scripts, CI/CD | x402 payment (no API key needed) |
-| MCP | AI agents (Claude, Cursor) | OAuth 2.1 PKCE |
+| HTTP API | Developers, scripts, CI/CD | x402 payment (no API key needed); free tier 5/day/IP |
+| MCP | AI agents (Claude, Cursor, Cline) | None for discovery + free tools (notary_free 5/day/IP) |
 
 Endpoints:
 - API: `https://api.aotrust.link/notarize`

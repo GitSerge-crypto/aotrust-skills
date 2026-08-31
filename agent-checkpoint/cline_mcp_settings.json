@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "aotrust": {
+      "type": "streamableHttp",
+      "url": "https://api.aotrust.link/mcp",
+      "alwaysAllow": ["notary_verify", "notary_quote", "notary_free"]
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "aotrust": {
+      "url": "https://api.aotrust.link/mcp"
+    }
+  }
+}

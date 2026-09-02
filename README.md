@@ -33,6 +33,7 @@ a binding hash ties your public key to the content. This turns "I wrote/publishe
 this first" into a verifiable claim for **any digital artifact**: manuscripts,
 designs, photos, research notes, legal correspondence. Verification is public
 at https://verify.aotrust.link — no account, no software install for the reader.
+Signing guide (Ed25519, NEP-413): [SKILL.md → Bilateral Signature](aotrust-notarize/SKILL.md#bilateral-signature-optional-v0x04).
 See [pdr-spec.md](pdr-spec.md) §v2.4 for the binding-hash construction.
 
 ## Quickstart

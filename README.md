@@ -25,6 +25,16 @@ plan/patch/release checkpoints — free tier, no account:
 Cline, and any MCP client, plus a copy-paste `AGENTS.md` block
 (`Provenance: <Shield ID>` in commits).
 
+## Authorship Claims (bilateral signatures)
+
+Beyond agent workflows, AOTrust supports **bilateral PDRs (v0x04)**: the
+artifact is signed by **you** (Ed25519) *and* countersigned by the notary —
+a binding hash ties your public key to the content. This turns "I wrote/published
+this first" into a verifiable claim for **any digital artifact**: manuscripts,
+designs, photos, research notes, legal correspondence. Verification is public
+at https://verify.aotrust.link — no account, no software install for the reader.
+See [pdr-spec.md](pdr-spec.md) §v2.4 for the binding-hash construction.
+
 ## Quickstart
 
 ```bash

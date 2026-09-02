@@ -65,6 +65,28 @@ Endpoints:
 - Verify: `https://verify.aotrust.link`
 - Docs: `https://docs.aotrust.link`
 
+## Verify API (public, embeddable)
+
+Verification is a **standalone public API** — no account, no rate limits, no
+payment. Embed it in your product (dashboards, audit tools, escrow flows)
+or call it from the terminal:
+
+```bash
+# Verify a PDR (base64url-encoded bundle):
+curl https://api.aotrust.link/v1/pdr/verify/<pdr_b64url>
+# → {"valid": true, "checks": {...}, "error": null}
+
+# Look up a PDR by Shield ID (8 hex chars):
+curl https://api.aotrust.link/v1/shield/lookup/<shield_id>
+# → {"found": true, "pdr_b64": "...", "shield_id": "..."}
+
+# Get the notary public key for offline verification:
+curl https://api.aotrust.link/v1/notary/pubkey
+```
+
+Prefer full offline trust? [pdr_parser.py](pdr_parser.py) verifies any PDR
+locally — zero dependencies, no network, no trust in our servers.
+
 ## PDR Specification & Tools
 
 - [pdr-spec.md](pdr-spec.md) — PDR v2.3/v2.4 binary format (Internal 193B + External 239B, ordinary + bilateral)

@@ -113,7 +113,7 @@ signature = Ed25519.sign(NEP413_buffer)
 
 | Value | Name | Description |
 |-------|------|-------------|
-| `0x00` | UNPAID | No payment. Blocked on mainnet. Available on testnet. |
+| `0x00` | UNPAID | No payment. Free tier (`/v1/shield/free`, rate-limited) and testnet. Payment paths (`/v1/notarize`, NEAR_DIRECT MCP tool) block UNPAID on mainnet. |
 | `0x01` | NEAR_DIRECT | Direct NEAR payment |
 | `0x02` | AGENT_MARKET_SUBMIT | Reserved |
 | `0x03` | AGENT_MARKET_RELEASE | Reserved |

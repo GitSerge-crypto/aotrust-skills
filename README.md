@@ -88,6 +88,34 @@ curl https://api.aotrust.link/v1/notary/pubkey
 Prefer full offline trust? [pdr_parser.py](pdr_parser.py) verifies any PDR
 locally — zero dependencies, no network, no trust in our servers.
 
+### Offline Merkle verification (anchored receipts)
+
+Anchored PDRs carry the daily Merkle root committed on-chain in the NEAR
+contract `notary-node.near` — readable from **any public NEAR RPC**, forever,
+independent of our servers. The verify API returns `merkle_proof`,
+`merkle_index`, `merkle_leaf` and `merkle_tree_size` for anchored PDRs.
+**Save the verify JSON response** — then verify it forever, offline:
+
+```bash
+# (once) save the verify response when the receipt is fresh:
+curl https://api.aotrust.link/v1/pdr/verify/<pdr_b64url> > verify.json
+
+# (any time, no AOTrust server needed) check inclusion:
+python3 verify_merkle_inclusion.py \
+  --leaf <merkle_leaf> --proof <comma-joined merkle_proof> \
+  --index <merkle_index> --root <merkle_root> \
+  --tree-size <merkle_tree_size>
+# → VALID
+
+# the root can always be re-checked against the chain itself via any
+# NEAR RPC: contract notary-node.near, method get_root({"seq": N})
+```
+
+[verify_merkle_inclusion.py](verify_merkle_inclusion.py) is standalone and
+zero-dependency (RFC 9162 §2.1.3.2 walk, same hashing as the anchoring
+engine). `tree_size` must be taken from the verify response (or a published
+anchor snapshot), not chosen by the verifier.
+
 ## PDR Specification & Tools
 
 - [pdr-spec.md](pdr-spec.md) — PDR v2.3/v2.4 binary format (Internal 193B + External 239B, ordinary + bilateral)

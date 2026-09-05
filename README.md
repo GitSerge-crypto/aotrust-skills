@@ -38,6 +38,10 @@ See [pdr-spec.md](pdr-spec.md) §v2.4 for the binding-hash construction.
 
 ## Quickstart
 
+**Prefer one-click?** See [INTEGRATIONS.md](INTEGRATIONS.md) — ready MCP configs for
+Cursor, Windsurf, Cline, Claude Desktop, plus a "notarize before commit" rule for your
+assistant and LangChain/CrewAI examples.
+
 ```bash
 # 1. Compute SHA-256 hash of your artifact
 HASH=$(echo -n "Hello AOTrust" | sha256sum | cut -d' ' -f1)

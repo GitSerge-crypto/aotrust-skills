@@ -51,7 +51,7 @@ Anchored daily to NEAR blockchain. $0.01 per proof. No account needed.
 
 | Interface | Best for | How |
 |-----------|----------|-----|
-| **MCP** (recommended for AI agents) | AI agents with MCP support | OAuth 2.1 → tools/list → notary_quote → HTTP /notarize (pay) → notary_verify |
+| **MCP** (recommended for AI agents) | AI agents with MCP support | tools/list → notary_quote → HTTP /notarize (pay) → notary_verify |
 | **HTTP API** (for developers) | Direct integration, scripts, CI/CD | POST /notarize → 402 → pay → 200 |
 
 Both interfaces produce the same PDR. Pick one.
@@ -68,7 +68,13 @@ https://api.aotrust.link/mcp
 
 ### Authentication
 
-OAuth 2.1 with PKCE (S256). Discovery:
+**None required.** The MCP endpoint works without any token or OAuth flow —
+connect and call `tools/list` directly. Free-tier tools (`notary_free`,
+`notary_quote`, `notary_verify`) are keyless; paid notarization uses in-band
+x402 micropayments (no API key either).
+
+OAuth 2.1 endpoints exist as optional discovery stubs (used by the
+agents.near.ai integration path):
 
 - Resource: `https://api.aotrust.link/.well-known/oauth-protected-resource/mcp`
 - Authorization server: `https://api.aotrust.link/.well-known/oauth-authorization-server`

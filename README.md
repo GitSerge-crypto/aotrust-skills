@@ -65,6 +65,18 @@ For full EIP-3009 signing code (Python + ethers.js examples), see [SKILL.md](aot
 | HTTP API | Developers, scripts, CI/CD | x402 payment (no API key needed); free tier 5/day/IP |
 | MCP | AI agents (Claude, Cursor, Cline) | None for discovery + free tools (notary_free 5/day/IP) |
 
+### Authentication & keys
+
+**Notarization is keyless.** Standard notarization (free tier and x402
+micropayments) never requires an API key — payment is in-band (x402
+`x-payment` header) and free calls are IP rate-limited.
+
+`AO_TRUST_KEY` is **optional** and only used by the GitHub Action
+(`action/notarize.py`) to unlock the dedicated CI rate limit (50/24h per key,
+via `X-Api-Key` on `/v1/shield/free`) instead of the shared per-IP free limit
+(5/24h). It is an opt-in convenience for CI pipelines — nothing else reads it,
+and no secret ever enters a PDR.
+
 Endpoints:
 - API: `https://api.aotrust.link/notarize`
 - MCP: `https://api.aotrust.link/mcp`

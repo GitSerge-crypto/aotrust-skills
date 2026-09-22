@@ -51,7 +51,7 @@ Anchored daily to NEAR blockchain. $0.01 per proof. No account needed.
 
 | Interface | Best for | How |
 |-----------|----------|-----|
-| **MCP** (recommended for AI agents) | AI agents with MCP support | tools/list → notary_quote → HTTP /notarize (pay) → notary_verify |
+| **MCP** (recommended for AI agents) | AI agents with MCP support | tools/list → notary_notarize_paid (x402 in-band micropayment) |
 | **HTTP API** (for developers) | Direct integration, scripts, CI/CD | POST /notarize → 402 → pay → 200 |
 
 Both interfaces produce the same PDR. Pick one.
@@ -89,7 +89,7 @@ agents.near.ai integration path):
 | `notary_free` | Create instant free cryptographic proof (UNPAID PDR), rate limited (5/IP/day) | Free |
 | `notary_quote` | Get price + payment details for a work_hash | Free |
 | `notary_notarize` | NEAR_DIRECT payment (not available on mainnet) | — |
-| `notary_notarize_paid` | x402 USDC — discovery only, cannot be called via MCP (see flow below) | $0.01 USDC |
+| `notary_notarize_paid` | Notarize artifact, on-chain settlement — x402-over-MCP (in-band) or HTTP fallback | $0.01 USDC |
 | `notary_verify` | Verify a notarization by job_id | Free |
 
 ### MCP Flow — Free Tier (no wallet, 1 step)
@@ -101,16 +101,18 @@ For instant free proof without payment:
 
 > For on-chain settlement proof (payment-bound PDR with tx_hash on Base), use the paid flow below.
 
-### MCP Flow (x402 USDC — paid, on-chain settlement)
+### MCP Flow (x402 USDC — paid, in-band settlement)
 
-x402 payment requires HTTP calls — MCP tool calls alone cannot complete the flow:
+Paid notarization works **natively over MCP** (x402-over-MCP transport):
 
-1. **MCP:** Call `notary_quote` with `work_hash` (see "Step 1: Compute the Work Hash" below) → get price ($0.01 USDC) and quote details
-2. **HTTP:** POST to `https://api.aotrust.link/notarize` with `{"work_hash": "..."}` → get 402 payment requirements (see Step 2 below for format)
-3. **HTTP:** Sign EIP-3009 `transferWithAuthorization` with your Ethereum key, then POST to `https://api.aotrust.link/notarize` again with `x-payment` header → get 200 + PDR (see Step 3 below for format)
-4. **MCP:** Call `notary_verify` with the `job_id` from step 3 → confirm `anchored`
+1. **MCP:** Call `notary_notarize_paid` with `work_hash` (see "Step 1: Compute the Work Hash" below)
+2. **MCP:** Server returns the 402 challenge: `isError: true` + `PaymentRequired` in `structuredContent` (and `content[0].text` as the same JSON)
+3. **MCP:** x402-capable agents sign the payment (EIP-3009 `transferWithAuthorization`, USDC on Base) and retry the same call with the signed payload in `params._meta["x402/payment"]` → receive the PDR; the settlement receipt comes in `_meta["x402/payment-response"]`
+4. **MCP:** Call `notary_verify` with the `job_id` from the PDR → confirm `anchored`
 
-> **Note:** `notary_notarize_paid` appears in `tools/list` for discovery but cannot be called via MCP — x402 payment headers are not supported in MCP tool calls. Use HTTP POST `/notarize` for the actual payment step.
+x402-unaware MCP clients should read `content[1]` of the 402 result (human-readable fallback) — direct HTTP clients can still `POST https://api.aotrust.link/notarize` with the `x-payment` header (see Step 3 below for format).
+
+> **Note:** `notary_notarize_paid` is a full paid tool: call it without payment to receive the challenge, then retry with payment attached. No HTTP round-trip is required for x402-capable MCP clients.
 
 ---
 

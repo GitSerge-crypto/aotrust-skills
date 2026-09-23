@@ -344,7 +344,6 @@ The standard PDR workflow (v0x03) remains available and does not require client 
 |----------|---------|--------|
 | HTTP 402 | Expected — payment required | Proceed to Step 3 |
 | HTTP 400 | Invalid work_hash format | Must be 64-char lowercase hex |
-| HTTP 409 | Duplicate work_hash | Already notarized — use verify |
 | HTTP 429 | Rate limited | Wait 60 seconds, retry once |
 
 ---
@@ -354,6 +353,7 @@ The standard PDR workflow (v0x03) remains available and does not require client 
 - Price: **$0.01 USDC** flat per PDR. No tiers, no subscriptions.
 - PDRs are **immutable**. Once issued, they cannot be modified.
 - Payment is **non-refundable** after PDR issuance.
+- AOTrust supports continuous provenance: re-notarizing the same work_hash is valid and produces a new timestamped PDR. Responses include a `provenance` block (first_seen, total notarizations) linking the new receipt to the original observation.
 - Daily Merkle root anchored to NEAR by `notary-node.near`.
 - Rate limit: 60 requests/minute per IP.
 - PDR spec: https://github.com/GitSerge-crypto/aotrust-skills/blob/main/pdr-spec.md

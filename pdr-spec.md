@@ -123,7 +123,8 @@ signature = Ed25519.sign(NEP413_buffer)
 | `0x07` | X402_NEAR | x402 payment on NEAR (future) |
 | `0x08` | CHAIN_SIG_PAYMENT | NEAR Chain Signatures payment |
 | `0x09` | NEAR_ESCROW_SETTLED | Escrow released (SETTLED PDR) |
-| `0x0A–0xFE` | — | Reserved |
+| `0x0A` | X402_SOLANA | x402 payment on Solana |
+| `0x0B–0xFE` | — | Reserved |
 | `0xFF` | UNKNOWN | Unrecognized, treat as UNPAID |
 
 All types are flat $0.01 per PDR. The anchor type is a technical attribute, not a pricing tier.

@@ -1,2 +1,5 @@
 pycache/
 __pycache__/
+
+# CodeGraph index (локальный)
+.codegraph/

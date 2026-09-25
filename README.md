@@ -8,7 +8,7 @@
 ![PDR v2.3/v2.4](https://img.shields.io/badge/PDR-v2.3%2Fv2.4-blue)
 ![x402](https://img.shields.io/badge/payment-x402-orange)
 
-AOTrust issues PDRs (Provenance Data Records) — 239-byte cryptographic receipts proving a digital artifact existed at a specific time. $0.01 USDC on Base via x402. Anchored daily to NEAR blockchain. No account needed. Supports ordinary (v0x03) and bilateral (v0x04) signatures.
+AOTrust issues PDRs (Provenance Data Records) — 239-byte cryptographic receipts proving a digital artifact existed at a specific time. $0.01 USDC via x402 — pay on Base (EVM) or Solana (SVM, via MCP). Anchored daily to NEAR blockchain. No account needed. Supports ordinary (v0x03) and bilateral (v0x04) signatures.
 
 **Positioning: an Independent External Provenance Checkpoint.** Native
 attestations (Sigstore, GitHub artifact attestations) verify a build *inside*

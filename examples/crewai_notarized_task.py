@@ -14,7 +14,9 @@ from crewai.tools import BaseTool
 
 from agent_notary import NotaryClient
 
-_client = NotaryClient(base_url="https://api.aotrust.link/v1")
+# NOTE: base_url must NOT have a /v1 suffix — the SDK appends /v1/... paths
+# itself; passing .../v1 produces /v1/v1/... → HTTP 404 on every call.
+_client = NotaryClient(base_url="https://api.aotrust.link")
 
 
 class AOTrustNotarizeTool(BaseTool):

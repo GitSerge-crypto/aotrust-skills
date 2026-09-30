@@ -4,6 +4,7 @@ Copy-paste wrappers that notarize AI outputs with AOTrust (free tier, no API key
 
 | File | Framework | What it does |
 |------|-----------|--------------|
+| `aotrust_sdk_free.py` | Plain Python (no framework) | `NotaryClient.shield_free()` → status by `job_id` → verify URL |
 | `langchain_tool.py` | LangChain (`@tool` decorator) | `aotrust_notarize_free` tool for LangChain agents |
 | `crewai_notarized_task.py` | CrewAI (`BaseTool` subclass) | `aotrust_notarize_tool` for CrewAI agents |
 | `../aotrust-notarize/SKILL.md` | Any MCP client | Full agent guide: quote → pay → notarize → verify |

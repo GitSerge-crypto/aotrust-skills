@@ -9,12 +9,12 @@
   },
   "homepage": "https://docs.aotrust.link",
   "license": "MIT",
-  "version": "2.3.6",
+  "version": "2.3.7",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "aotrust-protocol",
-      "version": "2.3.6",
+      "version": "2.3.7",
       "transport": {
         "type": "streamable-http",
         "url": "https://api.aotrust.link/mcp"

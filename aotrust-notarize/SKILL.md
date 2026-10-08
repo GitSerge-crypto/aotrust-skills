@@ -10,7 +10,7 @@ description: >
 license: MIT
 metadata:
   author: aotrust
-  version: "3.8.0"
+  version: "3.9.1"
   mcp-endpoint: https://api.aotrust.link/mcp
   http-endpoint: https://api.aotrust.link/notarize
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify
@@ -120,6 +120,8 @@ x402-unaware MCP clients should read `content[1]` of the 402 result (human-reada
 ---
 
 ## Interface 2: HTTP API (for Developers)
+
+> **Prices without a round-trip:** `GET https://api.aotrust.link/menu` returns the live tool list with costs and payment rails in one request (no 402 cycle needed).
 
 ### Step 1: Compute the Work Hash
 
@@ -368,6 +370,7 @@ The standard PDR workflow (v0x03) remains available and does not require client 
 
 ## Changelog
 
+- v3.9.1 — frontmatter version bump (3.8.0 → 3.9.0 missed in v3.9 commit); added /menu pointer to HTTP interface (live price list, one request, no 402 cycle).
 - v3.9.0 — Solana rail (X402_SOLANA, pat 0x0A): dual-402 MCP accepts Base (EIP-3009) and Solana (USDC-SPL, PayAI feePayer) payments; HTTP /notarize remains Base-only (documented). PDR verify: payment_anchor_type surfaced; on-chain reveal for Solana via recomputed payment_hash.
 - v3.8.0 — Added notary_free tool for instant free-tier notarization via MCP without wallet. Updated tools table (4→5), added Free Tier MCP Flow section.
 - v3.7.0 — ClawHub security audit fixes: explicit trigger boundaries in description, Security & Consent section (external transmission warnings, user confirmation rules, wallet safety), updated Proof of Authorship from "Planned" to implemented (Bilateral Signature v0x04).

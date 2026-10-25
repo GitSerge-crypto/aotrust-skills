@@ -33,8 +33,8 @@ Total:  1 + 1 + 1 + 8 + 36 + 32 + 32 + 32 + 32 + 64 = 239 bytes
 | 11 | 36 | `issuer_id` | bytes(36) | Notary NEAR account, NUL-padded (e.g. `notary-node.near`) |
 | 47 | 32 | `subject_hash` | bytes(32) | SHA-256 of agent account |
 | 79 | 32 | `payload_hash` | bytes(32) | v0x03: SHA-256 of work result. v0x04: Binding Hash = `sha256(work_hash + sig_A + agent_pubkey)` |
-| 111 | 32 | `merkle_root` | bytes(32) | Merkle root from daily on-chain anchor |
-| 143 | 32 | `payment_hash` | bytes(32) | Payment transaction hash (multi-chain) |
+| 111 | 32 | `merkle_root` | bytes(32) | Merkle root of the cumulative log at issuance (zeros while pending); roots are committed to NEAR hourly |
+| 143 | 32 | `payment_hash` | bytes(32) | Full payment identifier. New paid receipts: complete 32-byte hash. Early legacy receipts: 4-byte key + 28 zero bytes (verify via `/v1/pdr/by-tx`). Free receipts: 32 zero bytes. |
 | 175 | 64 | `signature` | bytes(64) | Ed25519 signature (NEP-413) |
 
 **Payload** = bytes 0–174 (175 bytes). **Signature** = bytes 175–238 (64 bytes).
@@ -72,7 +72,7 @@ Total:  1 + 1 + 16 + 32 + 32 + 8 + 8 + 8 + 4 + 8 + 1 + 2 + 3 + 1 + 4 + 64 = 193 
 | 90 | 8 | `global_seq` | U64 | Global sequence number |
 | 98 | 8 | `parent_seq` | U64 | Parent sequence (0 for standard; escrow PROVISIONAL PDR ref for SETTLED) |
 | 106 | 4 | `payment_ref` | bytes(4) | First 4 bytes of payment hash (indexing) |
-| 110 | 8 | `semantic_anchor` | bytes(8) | Semantic anchor |
+| 110 | 8 | `semantic_anchor` | bytes(8) | **Deprecated** — reserved, zero-filled in newly issued records |
 | 118 | 1 | `signing_mode` | U8 | `0x01` = VPS |
 | 119 | 2 | `reputation_count` | U16 | Reputation counter |
 | 121 | 3 | `reserved` | bytes(3) | Reserved |

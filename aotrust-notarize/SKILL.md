@@ -2,15 +2,16 @@
 name: aotrust-notarize
 description: >
   Issue a cryptographic proof (PDR) that a digital artifact existed at a specific time.
-  Pay $0.01 USDC on Base or Solana via x402 (MCP). Anchored daily to NEAR blockchain.
-  Publicly verifiable.
+  Pay $0.01 USDC on Base or Solana via x402 (MCP); optional evidence bundle $0.02 and
+  signed time attestation $0.002. Receipts are leaves in an append-only Merkle log
+  anchored hourly to NEAR blockchain; inclusion and consistency proofs are public.
   ONLY invoke when the user explicitly requests notarization or proof-of-existence for a
   specific artifact. This skill performs a paid external API call ($0.01 USDC, irreversible).
   Do NOT invoke proactively or as part of unrelated workflows.
 license: MIT
 metadata:
   author: aotrust
-  version: "3.9.1"
+  version: "3.10.0"
   mcp-endpoint: https://api.aotrust.link/mcp
   http-endpoint: https://api.aotrust.link/notarize
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify
@@ -46,7 +47,8 @@ research notes, datasets, photos, logs, sensor readings.
 
 The artifact itself is never uploaded — only its SHA-256 hash.
 
-Anchored daily to NEAR blockchain. $0.01 per proof. No account needed.
+Receipts are anchored hourly to NEAR blockchain (cumulative Merkle log, RFC 9162 inclusion/consistency
+proofs). $0.01 per proof. No account needed.
 
 ## Two Ways to Connect
 
@@ -83,22 +85,28 @@ agents.near.ai integration path):
 - Authorize: `GET https://api.aotrust.link/oauth/authorize`
 - Token: `POST https://api.aotrust.link/oauth/token`
 
-### Available Tools (5)
+### Available Tools (9)
 
 | Tool | Purpose | Payment? |
 |------|---------|----------|
-| `notary_free` | Create instant free cryptographic proof (UNPAID PDR), rate limited (5/IP/day) | Free |
+| `notary_free` | Create instant free cryptographic proof (UNPAID PDR), rate limited (5 per 24 h per IP, 1000/day global) | Free |
 | `notary_quote` | Get price + payment details for a work_hash | Free |
 | `notary_notarize` | NEAR_DIRECT payment (not available on mainnet) | — |
 | `notary_notarize_paid` | Notarize artifact, on-chain settlement — x402-over-MCP (in-band; Base or Solana USDC) or HTTP fallback (Base-only) | $0.01 USDC |
-| `notary_verify` | Verify a notarization by job_id | Free |
+| `notary_bundle` | Read-only evidence pack for an existing hash: **earliest** issuance + anchor + inclusion path + verify recipe (never creates a PDR) | $0.02 USDC |
+| `notary_time_attest` | Signed timestamp (AOT-TS1) bound to a payload hash, leaf in the same cumulative log | $0.002 USDC |
+| `notary_pdr_by_tx` | Look up a receipt by payment tx (full 64-hex payment hash) | Free |
+| `notary_anchor` | Anchor status / proof / logproof / consistency (RFC 9162) | Free |
+| `notary_verify` | Verify a notarization by job_id or pdr_b64 | Free |
+
+Live price list in one request: `GET https://api.aotrust.link/menu`.
 
 ### MCP Flow — Free Tier (no wallet, 1 step)
 
 For instant free proof without payment:
 
 1. **MCP:** Call `notary_free` with `work_hash` (64 hex) → get `shield_id`, `pdr_b64`, `verify_url`
-2. Done. No wallet, no payment. Rate limited: 5/IP/day, 1000/day global.
+2. Done. No wallet, no payment. Rate limited: 5 per 24 h per IP (IPv6 counted per /64), 1000/day global.
 
 > For on-chain settlement proof (payment-bound PDR with tx_hash on Base), use the paid flow below.
 
@@ -286,23 +294,59 @@ Anyone can verify — no account, no key, no authentication required.
 
 ---
 
+## Paid Read Products (no new PDR created)
+
+Two read-only products sit on top of an existing receipt — useful when you need *proof about a proof*:
+
+| Product | Price | Endpoint | What you get |
+|---|---|---|---|
+| **Evidence bundle** | $0.02 | `POST /v1/attestation/bundle` | For a `work_hash` already notarized: the **earliest** issuance (`picked:"earliest"`), all issuances (`issuances[]`), the covering anchor (`anchor.mode/anchor_seq/size/root/index/path`), and a verify recipe. Unknown hash → `404`, nothing charged. Optional `seq` pin → rejected **before** payment (`400 INVALID_SEQ` / `400 SEQ_HASH_MISMATCH`). |
+| **Signed time attestation** | $0.002 | `POST /v1/attest/time` | Ed25519 timestamp (`AOT-TS1`) over `payload_hash` + nonce, its leaf (`log_index`) in the same cumulative log, and anchor status. |
+
+```bash
+# bundle: 402 first, then pay and repeat
+curl -X POST https://api.aotrust.link/v1/attestation/bundle \
+  -H "Content-Type: application/json" \
+  -d '{"work_hash":"YOUR_SHA256_HEX"}'
+```
+
+## Anchor & Transparency (free)
+
+Every receipt is a leaf in an append-only cumulative Merkle tree; the root is committed to NEAR hourly
+when new leaves exist. All endpoints are free and need no key:
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /v1/anchor/status` | latest anchor (seq, size, root, NEAR tx) |
+| `GET /v1/anchor/proof/{seq}` | RFC 9162 inclusion path for a leaf (`404` + `latest_seq` if not yet anchored, `409 NOT_YET_ANCHORED` + `Retry-After` when pending) |
+| `GET /v1/anchor/logproof/{log_index}` | inclusion by log index (covers time attestations) |
+| `GET /v1/anchor/consistency?from=&to=` | proof the log only grew between two anchors |
+| `GET /v1/pdr/by-tx/{tx}` | receipt lookup by payment tx (full 64-hex payment hash) |
+| `https://docs.aotrust.link/transparency.html` | in-browser verification, protocol epochs, daily network snapshot |
+
 ## What a PDR Proves
 
 - ✅ Your artifact (identified by its SHA-256 hash) existed at a specific time
 - ✅ Payment was settled on Base Mainnet (tx_hash verifiable on-chain)
 - ✅ The notary (notary-node.near) signed the record
-- ✅ The record is anchored to NEAR blockchain via daily Merkle root
+- ✅ The record is a leaf in an append-only Merkle log; the root is committed to NEAR hourly and
+  inclusion/consistency proofs (RFC 9162) can be checked without trusting AOTrust
 
 A PDR does NOT reveal your artifact content — only its hash.
 
-## PDR Binary Format (v2.3)
+## PDR Binary Format (v2.3 / v2.4)
 
 | Format | Size | Payload | Signature |
 |--------|------|---------|-----------|
 | Internal (server storage) | 193 bytes | 129 bytes | 64 bytes Ed25519 |
 | External (client receipt) | 239 bytes | 175 bytes | 64 bytes Ed25519 |
 
-Version byte: 0x03. Signature: NEP-413 Ed25519 over raw payload.
+Version byte: `0x03` ordinary, `0x04` bilateral. Signature: NEP-413 Ed25519 over
+`pack("<II", 2147484061, len(payload)) + payload` — the envelope, **not** the bare payload.
+
+Payment field (bytes 143–175): new paid receipts carry the **full 32-byte** payment identifier;
+early legacy receipts carry a 4-byte key padded with zeros (verify via `/v1/pdr/by-tx`); free
+receipts carry zeros. Field `semantic_anchor` is deprecated (reserved, zero-filled).
 
 Full binary spec: https://github.com/GitSerge-crypto/aotrust-skills/blob/main/pdr-spec.md
 
@@ -350,18 +394,23 @@ The standard PDR workflow (v0x03) remains available and does not require client 
 | Response | Meaning | Action |
 |----------|---------|--------|
 | HTTP 402 | Expected — payment required | Proceed to Step 3 |
-| HTTP 400 | Invalid work_hash format | Must be 64-char lowercase hex |
+| HTTP 400 | Invalid `work_hash` / `seq` (`INVALID_SEQ`, `SEQ_HASH_MISMATCH`) | hash must be 64 lowercase hex; omit `seq` or pass one that belongs to the hash |
+| HTTP 404 | No receipt for this hash / tx / anchor yet (`NOT_FOUND`, `NOT_YET_ANCHORED` on old SDKs) | issue a PDR first; for anchors use `/v1/anchor/status` |
+| HTTP 409 | `NOT_YET_ANCHORED` — leaf exists, anchor pending | retry after `Retry-After` (≤ 1 anchor interval) |
+| HTTP 410 | `/v1/shield/direct` retired | use `POST https://shield.aotrust.link/shield` ($0.10) |
+| HTTP 502 | `PAYMENT_UNCONFIRMED` — facilitator said ok, chain says no | do not retry blindly; contact support with `tx_hash` |
 | HTTP 429 | Rate limited | Wait 60 seconds, retry once |
 
 ---
 
 ## Notes
 
-- Price: **$0.01 USDC** flat per PDR. No tiers, no subscriptions.
+- Price: **$0.01 USDC** per PDR (bundle $0.02, signed time attestation $0.002). No tiers, no subscriptions.
 - PDRs are **immutable**. Once issued, they cannot be modified.
 - Payment is **non-refundable** after PDR issuance.
-- AOTrust supports continuous provenance: re-notarizing the same work_hash is valid and produces a new timestamped PDR. Responses include a `provenance` block (first_seen, total notarizations) linking the new receipt to the original observation.
-- Daily Merkle root anchored to NEAR by `notary-node.near`.
+- AOTrust supports continuous provenance: re-notarizing the same work_hash is valid and produces a new timestamped PDR. Responses include a `provenance` block (first_seen, total notarizations) linking the new receipt to the original observation; the evidence bundle returns the **earliest** issuance.
+- Idempotency: replaying the same payment tx returns the original receipt (`Idempotency-Replayed: true`), never a second ledger row.
+- Merkle root committed to NEAR **hourly** (skip-empty) by `notary-node.near`; cumulative tree since 22.10.2026, legacy per-batch anchors before that.
 - Rate limit: 60 requests/minute per IP.
 - PDR spec: https://github.com/GitSerge-crypto/aotrust-skills/blob/main/pdr-spec.md
 - PDR parser (standalone, offline): https://github.com/GitSerge-crypto/aotrust-skills/blob/main/pdr_parser.py
@@ -370,6 +419,7 @@ The standard PDR workflow (v0x03) remains available and does not require client 
 
 ## Changelog
 
+- v3.10.0 — hourly cumulative anchoring (RFC 9162 proofs public), tools 5→9 (`notary_bundle` $0.02, `notary_time_attest` $0.002, `notary_pdr_by_tx`, `notary_anchor`), free tier wording (5 per 24 h per IP / IPv6 /64), paid read products + anchor/transparency sections, payment-field semantics by version, error table (404/409/410/502), idempotency note.
 - v3.9.1 — frontmatter version bump (3.8.0 → 3.9.0 missed in v3.9 commit); added /menu pointer to HTTP interface (live price list, one request, no 402 cycle).
 - v3.9.0 — Solana rail (X402_SOLANA, pat 0x0A): dual-402 MCP accepts Base (EIP-3009) and Solana (USDC-SPL, PayAI feePayer) payments; HTTP /notarize remains Base-only (documented). PDR verify: payment_anchor_type surfaced; on-chain reveal for Solana via recomputed payment_hash.
 - v3.8.0 — Added notary_free tool for instant free-tier notarization via MCP without wallet. Updated tools table (4→5), added Free Tier MCP Flow section.

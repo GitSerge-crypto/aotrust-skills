@@ -11,7 +11,7 @@ description: >
 license: MIT
 metadata:
   author: aotrust
-  version: "3.10.0"
+  version: "3.10.1"
   mcp-endpoint: https://api.aotrust.link/mcp
   http-endpoint: https://api.aotrust.link/notarize
   verification-endpoint: https://api.aotrust.link/v1/pdr/verify
@@ -419,6 +419,7 @@ The standard PDR workflow (v0x03) remains available and does not require client 
 
 ## Changelog
 
+- v3.10.1 — republish to clear a stuck 3.10.0 publication (content identical to 3.10.0).
 - v3.10.0 — hourly cumulative anchoring (RFC 9162 proofs public), tools 5→9 (`notary_bundle` $0.02, `notary_time_attest` $0.002, `notary_pdr_by_tx`, `notary_anchor`), free tier wording (5 per 24 h per IP / IPv6 /64), paid read products + anchor/transparency sections, payment-field semantics by version, error table (404/409/410/502), idempotency note.
 - v3.9.1 — frontmatter version bump (3.8.0 → 3.9.0 missed in v3.9 commit); added /menu pointer to HTTP interface (live price list, one request, no 402 cycle).
 - v3.9.0 — Solana rail (X402_SOLANA, pat 0x0A): dual-402 MCP accepts Base (EIP-3009) and Solana (USDC-SPL, PayAI feePayer) payments; HTTP /notarize remains Base-only (documented). PDR verify: payment_anchor_type surfaced; on-chain reveal for Solana via recomputed payment_hash.

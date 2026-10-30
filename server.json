@@ -28,6 +28,23 @@
           "default": "https://api.aotrust.link/v1"
         }
       ]
+    },
+    {
+      "registryType": "npm",
+      "identifier": "aotrust-mcp",
+      "version": "0.1.2",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "AOTRUST_API_KEY",
+          "description": "Optional: leave empty for the free tier",
+          "isRequired": false,
+          "isSecret": true,
+          "default": ""
+        }
+      ]
     }
   ]
 }

@@ -5,7 +5,7 @@ No account, no API key — start with the **free tier** (5 receipts/day per IP).
 
 **MCP server URL:** `https://api.aotrust.link/mcp` (Streamable HTTP; legacy `https://api.aotrust.link/sse` also available)
 
-**What you get:** 5 tools — `notary_free`, `notary_quote`, `notary_notarize`, `notary_notarize_paid`, `notary_verify` — cryptographic receipts (Ed25519 PDR) for any artifact, anchored daily to the NEAR blockchain.
+**What you get:** 5 tools — `notary_free`, `notary_quote`, `notary_notarize`, `notary_notarize_paid`, `notary_verify` — cryptographic receipts (Ed25519 PDR) for any artifact, anchored hourly to the NEAR blockchain.
 
 ---
 
@@ -98,7 +98,7 @@ If the free-tier limit (5/day) is reached, state it and continue without a recei
 ```
 
 The receipt proves the artifact existed at that moment, signed by the notary
-(`notary-node.near`) and anchored daily to NEAR — independently verifiable forever.
+(`notary-node.near`) and anchored hourly to NEAR — independently verifiable forever.
 
 ## Verify receipts — even offline
 

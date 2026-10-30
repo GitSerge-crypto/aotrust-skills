@@ -6,11 +6,11 @@ RFC 9162 Section 2.1.3.2 (Certificate Transparency) MERKLE AUDIT PATH
 verification walk.
 
 Verify that a leaf (the SHA-256 of a notarized work's reputation slice)
-is provably included in the daily anchor tree whose Merkle root is
+is provably included in the hourly anchor tree whose Merkle root is
 committed on-chain in the NEAR contract `notary-node.near`.
 
 Trust model:
-  - The daily root is readable from ANY public NEAR RPC endpoint
+  - The hourly root is readable from ANY public NEAR RPC endpoint
     (contract method `get_root`), independent of AOTrust servers.
   - The inclusion proof is returned by the AOTrust verify API
     (fields: merkle_proof, merkle_index, merkle_leaf, merkle_tree_size).

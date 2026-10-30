@@ -11,7 +11,7 @@ a release, a report — notarize it. You get a **Shield ID** (8 hex chars) that:
 
 - **proves the artifact existed at that moment** (SHA-256 hash + timestamp)
 - is **signed** by the notary issuer (Ed25519)
-- is **anchored daily to the NEAR blockchain** (publicly auditable)
+- is **anchored hourly to the NEAR blockchain** (publicly auditable)
 - is **independently verifiable** by anyone at https://verify.aotrust.link —
   outside your CI, outside your laptop, outside ChatGPT's memory
 

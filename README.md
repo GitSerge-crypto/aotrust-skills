@@ -8,12 +8,12 @@
 ![PDR v2.3/v2.4](https://img.shields.io/badge/PDR-v2.3%2Fv2.4-blue)
 ![x402](https://img.shields.io/badge/payment-x402-orange)
 
-AOTrust issues PDRs (Provenance Data Records) — 239-byte cryptographic receipts proving a digital artifact existed at a specific time. $0.01 USDC via x402 — pay on Base (EVM) or Solana (SVM, via MCP). Anchored daily to NEAR blockchain. No account needed. Supports ordinary (v0x03) and bilateral (v0x04) signatures.
+AOTrust issues PDRs (Provenance Data Records) — 239-byte cryptographic receipts proving a digital artifact existed at a specific time. $0.01 USDC via x402 — pay on Base (EVM) or Solana (SVM, via MCP). Anchored hourly to NEAR blockchain. No account needed. Supports ordinary (v0x03) and bilateral (v0x04) signatures.
 
 **Positioning: an Independent External Provenance Checkpoint.** Native
 attestations (Sigstore, GitHub artifact attestations) verify a build *inside*
 the CI system that produced it. AOTrust complements them: it issues a signed
-certificate *outside* GitHub/Microsoft infrastructure and anchors it daily to
+certificate *outside* GitHub/Microsoft infrastructure and anchors it hourly to
 the NEAR blockchain — so provenance survives even if the repository is
 rewritten, the CI logs disappear, or the attestation store is unavailable.
 Use both.
@@ -107,7 +107,7 @@ locally — zero dependencies, no network, no trust in our servers.
 
 ### Offline Merkle verification (anchored receipts)
 
-Anchored PDRs carry the daily Merkle root committed on-chain in the NEAR
+Anchored PDRs carry the hourly Merkle root committed on-chain in the NEAR
 contract `notary-node.near` — readable from **any public NEAR RPC**, forever,
 independent of our servers. The verify API returns `merkle_proof`,
 `merkle_index`, `merkle_leaf` and `merkle_tree_size` for anchored PDRs.
@@ -147,7 +147,7 @@ anchor snapshot), not chosen by the verifier.
 | Payment rail | x402 USDC | LINK | Bitcoin TX | Stripe |
 | PDR format | 239B binary | Oracle data | OTS file | PDF |
 | AI agent native | MCP + HTTP | No | No | No |
-| Blockchain anchor | NEAR (daily) | Ethereum | Bitcoin | None |
+| Blockchain anchor | NEAR (hourly) | Ethereum | Bitcoin | None |
 | Offline verify | Yes (pdr_parser.py) | No | Yes | No |
 
 ## GitHub Action

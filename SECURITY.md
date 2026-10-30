@@ -25,7 +25,7 @@ payai.network) that don't go through our code, phishing of our users.
    signing construction, Binding Hash formula for bilateral (v0x04) receipts.
 2. **Offline verifier** (`pdr_parser.py`) — parse and check any receipt locally,
    no network, no API call. Signature check uses the notary public key.
-3. **NEAR anchor** — receipts are anchored daily to mainnet account
+3. **NEAR anchor** — receipts are anchored hourly to mainnet account
    `notary-node.near`. Anyone can independently confirm the anchor via NEAR RPC.
 
 What a PDR proves: that a specific 32-byte `work_hash` was notarized at a specific
@@ -40,7 +40,7 @@ receipt is evidence of existence and binding, not a verdict on quality or identi
 
 - **Server compromise** (notary server closed-source): the notary key could sign
   fake receipts. Mitigation: anchors are public and auditable on NEAR; the same
-  notary key anchors a verifiable daily history — back-dating an artifact after
+  notary key anchors a verifiable hourly history — back-dating an artifact after
   discovery requires forging anchor history, which the chain exposes. Residual
   trust: the notary key itself (single key, VPS-held).
 - **Facilitator compromise** (x402, payai): a dishonest facilitator could report

@@ -322,7 +322,7 @@ when new leaves exist. All endpoints are free and need no key:
 | `GET /v1/anchor/logproof/{log_index}` | inclusion by log index (covers time attestations) |
 | `GET /v1/anchor/consistency?from=&to=` | proof the log only grew between two anchors |
 | `GET /v1/pdr/by-tx/{tx}` | receipt lookup by payment tx (full 64-hex payment hash) |
-| `https://docs.aotrust.link/transparency.html` | in-browser verification, protocol epochs, daily network snapshot |
+| `https://docs.aotrust.link/transparency.html` | in-browser verification, protocol epochs, hourly network snapshot |
 
 ## What a PDR Proves
 

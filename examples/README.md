@@ -14,7 +14,7 @@ All wrappers call the same core: `NotaryClient.shield_free(work_hash)` from
 5 receipts/day per IP, flat $0.01 for volume (x402, Base USDC).
 
 Every receipt (PDR, 239 bytes) is Ed25519-signed by `notary-node.near` and
-anchored daily to the NEAR blockchain — verifiable forever, even offline
+anchored hourly to the NEAR blockchain — verifiable forever, even offline
 (see `INTEGRATIONS.md` → "Verify receipts").
 
 Framework imports (`langchain_core`, `crewai`) are intentionally NOT installed

@@ -26,7 +26,7 @@ def _sha256_hex(data: bytes) -> str:
 @tool
 def aotrust_notarize_free(artifact_text: str) -> str:
     """Notarize an artifact: creates a signed cryptographic receipt (PDR)
-    proving the artifact existed at this moment. Anchored daily to NEAR.
+    proving the artifact existed at this moment. Anchored hourly to NEAR.
     Free tier, no API key needed (5 receipts/day per IP).
 
     Args:

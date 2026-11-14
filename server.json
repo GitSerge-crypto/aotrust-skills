@@ -9,7 +9,7 @@
   },
   "homepage": "https://docs.aotrust.link",
   "license": "MIT",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "packages": [
     {
       "registryType": "pypi",
@@ -32,7 +32,7 @@
     {
       "registryType": "npm",
       "identifier": "aotrust-mcp",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "transport": {
         "type": "stdio"
       },

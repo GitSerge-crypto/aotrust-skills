@@ -9,12 +9,12 @@
   },
   "homepage": "https://docs.aotrust.link",
   "license": "MIT",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "aotrust-protocol",
-      "version": "2.5.1",
+      "version": "2.5.2",
       "transport": {
         "type": "streamable-http",
         "url": "https://api.aotrust.link/mcp"
@@ -25,24 +25,30 @@
           "description": "AOTrust API base URL",
           "isRequired": false,
           "isSecret": false,
-          "default": "https://api.aotrust.link/v1"
+          "default": "https://api.aotrust.link"
         }
       ]
     },
     {
       "registryType": "npm",
       "identifier": "aotrust-mcp",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "transport": {
         "type": "stdio"
       },
       "environmentVariables": [
         {
-          "name": "AOTRUST_API_KEY",
-          "description": "Optional: leave empty for the free tier",
+          "name": "AOTRUST_BASE_URL",
+          "description": "AOTrust API base URL (no /v1 suffix)",
           "isRequired": false,
-          "isSecret": true,
-          "default": ""
+          "isSecret": false,
+          "default": "https://api.aotrust.link"
+        },
+        {
+          "name": "AOTRUST_EVM_PRIVATE_KEY",
+          "description": "Optional: EVM private key for the paid x402 tool ($0.01 on Base). Omit for free tier",
+          "isRequired": false,
+          "isSecret": true
         }
       ]
     }

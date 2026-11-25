@@ -2,6 +2,7 @@
 
 [![Official MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.GitSerge--crypto%2Faotrust--notary-2f6feb)](https://registry.modelcontextprotocol.io/v0/servers?search=aotrust)
 [![M8ven Score](https://m8ven.ai/badge/mcp/gitserge-crypto-aotrust-skills-g3hz21?v=0f2c915f775a2efe4292a97d389f921c)](https://m8ven.ai/mcp/gitserge-crypto-aotrust-skills-g3hz21)
+[![GitSerge-crypto/aotrust-skills MCP server](https://glama.ai/mcp/servers/GitSerge-crypto/aotrust-skills/badges/score.svg)](https://glama.ai/mcp/servers/GitSerge-crypto/aotrust-skills)
 [![Protected by AOTrust](https://img.shields.io/badge/AOTrust-Notarized-0ea5e9)](https://verify.aotrust.link/s/40aefae4)
 ![Mainnet Live](https://img.shields.io/badge/mainnet-LIVE-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
